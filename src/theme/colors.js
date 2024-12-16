@@ -1,7 +1,10 @@
 export const colors = {
-    text: '#070b02',
-    background: '#f9fdf4',
-    primary: '#90e132',
-    secondary: '#9388ee',
-    accent: '#e75de8',
-  };  
+  text: '#000000',
+  background: '#FFFFFF',
+  primary: '#2E7D32',
+  secondary: '#FFFFFF',
+  accent: '#FF3B30',
+  edit: '#34C759',
+  border: '#E5E5E5',
+  placeholder: '#A1A1A1',
+};

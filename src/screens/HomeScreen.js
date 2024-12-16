@@ -1,43 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { 
+  View, 
+  Text, 
+  FlatList, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Platform,
+  Animated,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { loadTasks, saveTasks } from '../utils/storage';
 import { colors } from '../theme/colors';
 
 export default function HomeScreen() {
-  const navigation = useNavigation();
   const [tasks, setTasks] = useState([]);
+  const navigation = useNavigation();
+  const [fadeAnim] = useState(new Animated.Value(1));
 
-  // Load tasks on mount
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const savedTasks = await loadTasks();
-        setTasks(savedTasks);
-      } catch (error) {
-        console.error('Erro ao carregar tarefas:', error);
-      }
+    const load = async () => {
+      const tasks = await loadTasks();
+      setTasks(tasks);
     };
-    fetchTasks();
+    load();
   }, []);
 
-  // Reload tasks when the screen gains focus
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
-      try {
-        const savedTasks = await loadTasks();
-        setTasks(savedTasks);
-      } catch (error) {
-        console.error('Erro ao recarregar tarefas:', error);
-      }
+      const tasks = await loadTasks();
+      setTasks(tasks);
     });
-
-    return unsubscribe; // Cleanup listener
+    return unsubscribe;
   }, [navigation]);
 
-  // Delete a task
   const deleteTask = async (index) => {
+    Animated.sequence([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
     const updatedTasks = tasks.filter((_, i) => i !== index);
     setTasks(updatedTasks);
     await saveTasks(updatedTasks);
@@ -45,67 +55,141 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Lista de Tarefas</Text>
-      <FlatList
-        data={tasks}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item, index }) => (
-          <TouchableOpacity
-            style={styles.taskCard}
-            onPress={() => navigation.navigate('EditTask', { taskIndex: index, taskText: item })}
-          >
-            <Text style={styles.taskText}>{item}</Text>
-            <View style={styles.taskActions}>
-              <Ionicons
-                name="create-outline"
-                size={24}
-                color={colors.primary}
-                onPress={() => navigation.navigate('EditTask', { taskIndex: index, taskText: item })}
-              />
-              <Ionicons
-                name="trash-outline"
-                size={24}
-                color={colors.accent}
-                onPress={() => deleteTask(index)}
-              />
+      <View style={styles.header}>
+        <Text style={styles.title}>Tasks</Text>
+      </View>
+
+      <Animated.View style={[styles.listContainer, { opacity: fadeAnim }]}>
+        <FlatList
+          data={tasks}
+          keyExtractor={(item, index) => index.toString()}
+          contentContainerStyle={styles.listContent}
+          renderItem={({ item, index }) => (
+            <View style={styles.taskCard}>
+              <Text style={styles.taskText}>{item}</Text>
+              <View style={styles.taskActions}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('EditTask', { taskIndex: index, taskText: item })}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Ionicons name="create-outline" size={22} color={colors.edit} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => deleteTask(index)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Ionicons name="trash-outline" size={22} color={colors.accent} />
+                </TouchableOpacity>
+              </View>
             </View>
-          </TouchableOpacity>
-        )}
-        ListEmptyComponent={<Text style={styles.emptyText}>Nenhuma tarefa adicionada.</Text>}
-      />
+          )}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No tasks yet</Text>
+              <Text style={styles.emptySubtext}>Tap the button below to create one</Text>
+            </View>
+          }
+        />
+      </Animated.View>
+
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => navigation.navigate('AddTask')}
       >
-        <Ionicons name="add-circle" size={24} color={colors.background} />
-        <Text style={styles.addButtonText}>Nova Tarefa</Text>
+        <Ionicons name="add" size={24} color={colors.background} />
+        <Text style={styles.addButtonText}>New Task</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: colors.background },
-  title: { fontSize: 24, fontWeight: 'bold', color: colors.text, marginBottom: 20 },
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.primary,
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 20,
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
   },
-  addButtonText: { color: colors.background, fontWeight: 'bold', marginLeft: 10 },
-  taskCard: {
-    padding: 15,
-    marginBottom: 10,
-    borderRadius: 5,
-    backgroundColor: colors.secondary,
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    padding: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
   },
-  taskText: { color: colors.background, fontSize: 16 },
-  taskActions: { flexDirection: 'row', gap: 10 },
-  emptyText: { textAlign: 'center', color: colors.text, marginTop: 20 },
+  title: {
+    fontSize: 34,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  listContainer: {
+    flex: 1,
+  },
+  listContent: {
+    padding: 20,
+    paddingTop: 0,
+  },
+  taskCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: colors.secondary,
+    padding: 16,
+    borderRadius: 15,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  taskText: {
+    flex: 1,
+    fontSize: 16,
+    color: colors.text,
+  },
+  taskActions: {
+    flexDirection: 'row',
+    gap: 15,
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#4CAF50',
+    padding: 16,
+    margin: 20,
+    borderRadius: 15,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  addButtonText: {
+    color: colors.background,
+    fontWeight: '600',
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: colors.text,
+    opacity: 0.7,
+  },
 });
