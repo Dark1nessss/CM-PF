@@ -1,0 +1,11 @@
+Your selected colors:
+
+    Text: #070b02 - rgb(7, 11, 2) - hsl(87, 69%, 3%)
+    Background: #f9fdf4 - rgb(249, 253, 244) - hsl(87, 69%, 97%)
+    Primary: #90e132 - rgb(144, 225, 50) - hsl(88, 74%, 54%)
+    Secondary: #9388ee - rgb(147, 136, 238) - hsl(246, 75%, 73%)
+    Accent: #e75de8 - rgb(231, 93, 232) - hsl(300, 75%, 64%)
+
+Realtime Colors link for selected colors: https://www.realtimecolors.com/?colors=070b02-f9fdf4-90e132-9388ee-e75de8&fonts=Inter-Inter
+
+Thanks for using RealtimeColors.com!
