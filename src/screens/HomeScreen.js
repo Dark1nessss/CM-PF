@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import LottieView from 'lottie-react-native';
 import { useNavigation } from '@react-navigation/native';
-import { loadTasks } from '../utils/storage';
+import { loadTasks, saveTasks } from '../utils/storage';
 import { colors } from '../theme/colors';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [tasks, setTasks] = useState([]);
-  const [showAnimation, setShowAnimation] = useState(false);
 
+  // Load tasks on mount
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -23,57 +22,57 @@ export default function HomeScreen() {
     fetchTasks();
   }, []);
 
+  // Reload tasks when the screen gains focus
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
       try {
         const savedTasks = await loadTasks();
-        setTasks(savedTasks); // Refreshes the state of the tasks
+        setTasks(savedTasks);
       } catch (error) {
         console.error('Erro ao recarregar tarefas:', error);
       }
     });
 
-  // Unsubscribe when the screen is unmounted or the user navigates away from it
-    return unsubscribe;
+    return unsubscribe; // Cleanup listener
   }, [navigation]);
 
-  const completeTask = async (index) => {
-    setShowAnimation(true);
+  // Delete a task
+  const deleteTask = async (index) => {
     const updatedTasks = tasks.filter((_, i) => i !== index);
-    await saveTasks(updatedTasks);
     setTasks(updatedTasks);
-
-    setTimeout(() => setShowAnimation(false), 2000); // Wait for the animation
+    await saveTasks(updatedTasks);
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Lista de Tarefas</Text>
-      {showAnimation ? (
-        <LottieView
-          source={require('../../assets/animations/task-complete.json')}
-          autoPlay
-          loop={false}
-          style={styles.animation}
-        />
-      ) : (
-        <FlatList
-          data={tasks}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item, index }) => (
-            <TouchableOpacity
-              style={styles.taskCard}
-              onPress={() => completeTask(index)}
-            >
-              <Text style={styles.taskText}>{item}</Text>
-              <Ionicons name="checkmark-done" size={24} color={colors.accent} />
-            </TouchableOpacity>
-          )}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>Nenhuma tarefa adicionada.</Text>
-          }
-        />
-      )}
+      <FlatList
+        data={tasks}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item, index }) => (
+          <TouchableOpacity
+            style={styles.taskCard}
+            onPress={() => navigation.navigate('EditTask', { taskIndex: index, taskText: item })}
+          >
+            <Text style={styles.taskText}>{item}</Text>
+            <View style={styles.taskActions}>
+              <Ionicons
+                name="create-outline"
+                size={24}
+                color={colors.primary}
+                onPress={() => navigation.navigate('EditTask', { taskIndex: index, taskText: item })}
+              />
+              <Ionicons
+                name="trash-outline"
+                size={24}
+                color={colors.accent}
+                onPress={() => deleteTask(index)}
+              />
+            </View>
+          </TouchableOpacity>
+        )}
+        ListEmptyComponent={<Text style={styles.emptyText}>Nenhuma tarefa adicionada.</Text>}
+      />
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => navigation.navigate('AddTask')}
@@ -88,7 +87,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: colors.background },
   title: { fontSize: 24, fontWeight: 'bold', color: colors.text, marginBottom: 20 },
-  animation: { width: 200, height: 200, alignSelf: 'center' },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -108,5 +106,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   taskText: { color: colors.background, fontSize: 16 },
+  taskActions: { flexDirection: 'row', gap: 10 },
   emptyText: { textAlign: 'center', color: colors.text, marginTop: 20 },
 });
