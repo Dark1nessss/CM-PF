@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import StackNavigator from './navigation/StackNavigator';
+import HomeScreen from './screens/HomeScreen';
 
 export default function App() {
-  return <StackNavigator />;
+  return <HomeScreen />;
 }

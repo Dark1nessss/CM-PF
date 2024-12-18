@@ -1,11 +1,23 @@
-Your selected colors:
+Base Colors for the App:
 
-    Text: #070b02 - rgb(7, 11, 2) - hsl(87, 69%, 3%)
-    Background: #f9fdf4 - rgb(249, 253, 244) - hsl(87, 69%, 97%)
-    Primary: #90e132 - rgb(144, 225, 50) - hsl(88, 74%, 54%)
-    Secondary: #9388ee - rgb(147, 136, 238) - hsl(246, 75%, 73%)
-    Accent: #e75de8 - rgb(231, 93, 232) - hsl(300, 75%, 64%)
-
-Realtime Colors link for selected colors: https://www.realtimecolors.com/?colors=070b02-f9fdf4-90e132-9388ee-e75de8&fonts=Inter-Inter
-
-Thanks for using RealtimeColors.com!
+    text: '#FFFFFF',
+    background: '#1C1C1E',
+    primary: '#8AB4F8',
+    secondary: '#2C2C2E',
+    accent: '#FF3B30',
+    placeholder: '#A1A1A1',
+    success: '#4CAF50',
+    warning: '#FFAD1F',
+    error: '#D32F2F',
+    border: '#3A3A3C',
+    cardBackground: '#2D2D2D',
+    headerText: '#E8EAED',
+    grayDark: '#3C3C43',
+    grayLight: '#8E8E93',
+    grayMid: '#AEAEB2',
+    link: '#0A84FF',
+    icon: '#9AA0A6',
+    inactive: '#5F6368',
+    highlight: '#FEE2B3',
+    modalBackground: '#121212',
+    navigationBar: '#000000',
