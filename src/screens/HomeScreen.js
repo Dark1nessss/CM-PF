@@ -4,6 +4,7 @@ import { Entypo } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import AccountModal from '../components/AccountModal';
 import MenuModal from '../components/MenuModal';
+import Favorites from '../components/Favorites';
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -29,6 +30,14 @@ export default function HomeScreen() {
           <Entypo name="dots-three-horizontal" size={24} color={colors.icon} />
         </TouchableOpacity>
       </View>
+      <Favorites
+        items={[
+          { name: 'Weekly Workout Plan' },
+          { name: 'Travel Planner' },
+          { name: 'Meal Planner' },
+        ]}
+        onSelect={(item) => console.log(`Selected: ${item.name}`)}
+      />
       <AccountModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -51,7 +60,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: 5,
     marginBottom: 20,
+    marginLeft: 16,
   },
   leftSection: {
     flexDirection: 'row',
