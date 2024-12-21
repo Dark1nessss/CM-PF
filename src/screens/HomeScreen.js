@@ -5,6 +5,7 @@ import { colors } from '../theme/colors';
 import AccountModal from '../components/AccountModal';
 import MenuModal from '../components/MenuModal';
 import Favorites from '../components/Favorites';
+import ExpandableCard from '../components/ExpandableCard';
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -37,6 +38,13 @@ export default function HomeScreen() {
           { name: 'Meal Planner' },
         ]}
         onSelect={(item) => console.log(`Selected: ${item.name}`)}
+      />
+      <Text style={styles.sectionTitle}>Favorites</Text>
+      <ExpandableCard
+        title="Weekly Workout Plan"
+        subPages={[
+          { title: 'Untitled' },
+        ]}
       />
       <AccountModal
         visible={modalVisible}
@@ -90,6 +98,13 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     color: colors.placeholder,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.placeholder,
+    marginHorizontal: 16,
+    marginVertical: 8,
   },
   iconContainer: {
     padding: 8,
