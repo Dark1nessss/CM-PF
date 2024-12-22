@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Entypo, Feather } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 
-const FavoriteCard = ({ items = [] }) => {
+const OtherPages = ({ items = [] }) => {
   const [expandedItems, setExpandedItems] = useState({});
   const [expandedSubPages, setExpandedSubPages] = useState({});
 
@@ -56,7 +56,7 @@ const FavoriteCard = ({ items = [] }) => {
             {expandedItems[index] && (
               <View style={styles.subSectionContainer}>
                 {!item.subPages || item.subPages.length === 0 ? (
-                  <Text style={styles.noPagesText}>No pages inside</Text>
+                <Text style={styles.noPagesText}>No pages inside</Text>
                 ) : (
                   item.subPages.map((subPage, subIndex) => (
                     <View key={subIndex}>
@@ -123,6 +123,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.cardBackground,
     borderRadius: 8,
     overflow: 'hidden',
+    marginBottom: 20,
   },
   itemContainer: {
     padding: 12,
@@ -174,4 +175,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FavoriteCard;
+export default OtherPages;

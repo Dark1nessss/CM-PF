@@ -11,7 +11,6 @@ export default function JumpIn({ items = [], onSelect }) {
         data={items}
         keyExtractor={(item, index) => index.toString()}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.listContainer}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
@@ -44,9 +43,6 @@ const styles = StyleSheet.create({
     color: colors.placeholder,
     marginHorizontal: 16,
     marginBottom: 8,
-  },
-  listContainer: {
-    paddingHorizontal: 16,
   },
   card: {
     backgroundColor: colors.secondary,

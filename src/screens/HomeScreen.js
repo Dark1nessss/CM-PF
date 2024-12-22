@@ -1,18 +1,45 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, StatusBar, ScrollView } from 'react-native';
 import { Entypo } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import AccountModal from '../components/AccountModal';
 import MenuModal from '../components/MenuModal';
 import Favorites from '../components/JumpIn';
 import FavoriteCard from '../components/FavoriteCard';
+import OtherPages from '../components/OtherPages';
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
 
+  const testData = [
+    {
+      title: 'Main Page 1',
+      subPages: [
+        { title: 'SubPage 1.1' },
+        { title: 'SubPage 1.2' },
+      ],
+    },
+    {
+      title: 'Main Page 2',
+      subPages: [
+        { title: 'SubPage 2.1' },
+        { title: 'SubPage 2.2' },
+      ],
+    },
+    {
+      title: 'Main Page 3',
+      subPages: [
+        { title: 'SubPage 3.1' },
+        {
+          title: 'SubPage 3.2',
+        },
+      ],
+    },
+  ];
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <StatusBar
         barStyle={Platform.OS === 'ios' ? 'light-content' : 'light-content'}
         backgroundColor={colors.background}
@@ -39,12 +66,10 @@ export default function HomeScreen() {
         ]}
         onSelect={(item) => console.log(`Selected: ${item.name}`)}
       />
-      <FavoriteCard
-        title="Weekly Workout Plan"
-        subPages={[
-          { title: 'Untitled' },
-        ]}
-      />
+      <Text style={styles.sectionTitle}>Favorites</Text>
+      <FavoriteCard items={testData} />
+      <Text style={styles.sectionTitle}>Other Pages...</Text>
+      <OtherPages items={testData} />
       <AccountModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -53,7 +78,7 @@ export default function HomeScreen() {
         visible={menuVisible} 
         onClose={() => setMenuVisible(false)} 
       />
-    </View>
+    </ScrollView>
   );
 }
 
@@ -62,6 +87,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
     paddingHorizontal: 16,
+    paddingBottom: 20,
   },
   header: {
     flexDirection: 'row',
