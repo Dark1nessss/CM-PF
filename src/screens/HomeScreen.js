@@ -5,7 +5,7 @@ import { colors } from '../theme/colors';
 import AccountModal from '../components/AccountModal';
 import MenuModal from '../components/MenuModal';
 import Favorites from '../components/Favorites';
-import ExpandableCard from '../components/ExpandableCard';
+import FavoriteCard from '../components/FavoriteCard';
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -39,8 +39,7 @@ export default function HomeScreen() {
         ]}
         onSelect={(item) => console.log(`Selected: ${item.name}`)}
       />
-      <Text style={styles.sectionTitle}>Favorites</Text>
-      <ExpandableCard
+      <FavoriteCard
         title="Weekly Workout Plan"
         subPages={[
           { title: 'Untitled' },
