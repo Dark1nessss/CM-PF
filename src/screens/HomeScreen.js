@@ -12,6 +12,17 @@ export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
 
+
+  const favoriteData = [
+    {
+      title: 'Meal Planer',
+      subPages: [
+        { title: 'Meat Diet' },
+        { title: 'Fish Diet' },
+      ],
+    },
+  ];
+
   const testData = [
     {
       title: 'Main Page 1',
@@ -67,7 +78,7 @@ export default function HomeScreen() {
         onSelect={(item) => console.log(`Selected: ${item.name}`)}
       />
       <Text style={styles.sectionTitle}>Favorites</Text>
-      <FavoriteCard items={testData} />
+      <FavoriteCard items={favoriteData} />
       <Text style={styles.sectionTitle}>Other Pages...</Text>
       <OtherPages items={testData} />
       <AccountModal
