@@ -4,7 +4,7 @@ import { Entypo } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import AccountModal from '../components/AccountModal';
 import MenuModal from '../components/MenuModal';
-import Favorites from '../components/Favorites';
+import Favorites from '../components/JumpIn';
 import FavoriteCard from '../components/FavoriteCard';
 
 export default function HomeScreen() {
@@ -69,7 +69,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 5,
     marginBottom: 20,
-    marginLeft: 16,
   },
   leftSection: {
     flexDirection: 'row',

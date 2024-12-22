@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
 import { colors } from '../theme/colors';
 
-export default function Favorites({ items = [], onSelect }) {
+export default function JumpIn({ items = [], onSelect }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Jump Back In</Text>
