@@ -8,58 +8,69 @@ import {
   ScrollView,
   StatusBar,
 } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 
 export default function SignInScreen() {
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView 
+      contentContainerStyle={styles.container}
+      bounces={false}
+    >
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
       
-      {/* Logo Section */}
+      {/* Logo */}
       <View style={styles.logoContainer}>
         <Image
-          source={('./assets/favicon.png')} // Replace with your logo asset
+          source={require('../../assets/favicon.png')}
           style={styles.logo}
         />
       </View>
 
-      {/* Header Section */}
+      {/* Header */}
       <Text style={styles.headerTitle}>Think it. Make it.</Text>
       <Text style={styles.headerSubtitle}>Log in to your NotY account</Text>
 
-      {/* Buttons Section */}
+      {/* Illustration */}
+      <View style={styles.illustrationContainer}>
+        <Image
+          source={require('../../assets/NotY_Login.png')}
+          style={styles.illustration}
+          resizeMode="contain"
+        />
+      </View>
+
+      {/* Buttons */}
       <View style={styles.buttonsContainer}>
-        <TouchableOpacity style={[styles.button, styles.googleButton]}>
+        <TouchableOpacity style={styles.button}>
+        <MaterialCommunityIcons name="google" size={24} color="white" />
           <Text style={styles.buttonText}>Continue with Google</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.appleButton]}>
-          <Text style={styles.buttonText}>Continue with Apple</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.ssoButton]}>
-          <Text style={styles.buttonText}>Single sign-on (SSO)</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.emailButton]}>
+
+        <TouchableOpacity style={styles.button}>
+          <MaterialCommunityIcons name="email-outline" size={24} color="white" />
           <Text style={styles.buttonText}>Continue with email</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Footer Section */}
-      <View style={styles.footerContainer}>
+      {/* Footer */}
+      <View style={styles.footer}>
         <Text style={styles.footerText}>
-          Your name and photo are displayed to users who invite you to a
-          workspace using your email. By continuing, you acknowledge that you
-          understand and agree to the <Text style={styles.link}>Terms & Conditions</Text> and{' '}
+          Your name and photo are displayed to users who invite you to a workspace using your email. By continuing, you acknowledge that you understand and agree to the{' '}
+          <Text style={styles.link}>Terms & Conditions</Text> and{' '}
           <Text style={styles.link}>Privacy Policy</Text>.
         </Text>
+
         <View style={styles.footerLinks}>
           <TouchableOpacity>
-            <Text style={styles.footerLinkText}>Privacy & terms</Text>
+          <Text style={styles.link}>Privacy & terms</Text>
           </TouchableOpacity>
-          <Text style={styles.footerDivider}> | </Text>
+          <Text style={styles.footerDivider}>|</Text>
           <TouchableOpacity>
-            <Text style={styles.footerLinkText}>Need help?</Text>
+          <Text style={styles.link}>Need help?</Text>
           </TouchableOpacity>
         </View>
+
         <Text style={styles.copyright}>© 2025 NotY Labs, Inc.</Text>
       </View>
     </ScrollView>
@@ -67,96 +78,96 @@ export default function SignInScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+container: {
     flexGrow: 1,
     backgroundColor: colors.background,
-    paddingHorizontal: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoContainer: {
-    marginTop: 50,
-    marginBottom: 20,
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    resizeMode: 'contain',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.headerText,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: colors.placeholder,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  buttonsContainer: {
-    width: '100%',
-    marginBottom: 40,
-  },
-  button: {
-    paddingVertical: 14,
     paddingHorizontal: 20,
-    borderRadius: 8,
-    marginBottom: 16,
-    justifyContent: 'center',
+    paddingTop: 32,
+    paddingBottom: 16,
     alignItems: 'center',
-  },
-  googleButton: {
-    backgroundColor: '#4285F4',
-  },
-  appleButton: {
-    backgroundColor: '#000000',
-  },
-  ssoButton: {
-    backgroundColor: colors.secondary,
-  },
-  emailButton: {
-    backgroundColor: colors.primary,
-  },
-  buttonText: {
-    fontSize: 16,
-    color: colors.text,
+},
+logoContainer: {
+    marginBottom: 16,
+},
+logo: {
+    width: 32,
+    height: 32,
+},
+headerTitle: {
+    fontSize: 22,
     fontWeight: '600',
-  },
-  footerContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  footerText: {
-    fontSize: 12,
+    color: colors.headerText,
+    marginBottom: 4,
+},
+headerSubtitle: {
+    fontSize: 14,
     color: colors.placeholder,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  link: {
-    color: colors.link,
-    textDecorationLine: 'underline',
-  },
-  footerLinks: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    marginBottom: 24,
+},
+illustrationContainer: {
+    marginBottom: 24,
     alignItems: 'center',
-    marginBottom: 10,
-  },
-  footerLinkText: {
+},
+illustration: {
+    width: 360,
+    height: 360,
+},
+buttonsContainer: {
+    width: '100%',
+    gap: 8,
+    marginBottom: 24,
+},
+button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 4,
+    gap: 8,
+    textAlign: 'center',
+    justifyContent: 'center',
+},
+buttonIcon: {
+    width: 24,
+    height: 24,
+},
+buttonText: {
+    color: colors.text,
     fontSize: 14,
-    color: colors.link,
-  },
-  footerDivider: {
-    fontSize: 14,
-    color: colors.placeholder,
-    marginHorizontal: 8,
-  },
-  copyright: {
+    fontWeight: '500',
+},
+footer: {
+    marginTop: 'auto',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+},
+footerText: {
     fontSize: 12,
     color: colors.placeholder,
     textAlign: 'center',
-  },
+    marginBottom: 12,
+    marginBottom: 12,
+    lineHeight: 16,
+},
+link: {
+    color: colors.link,
+},
+footerLinks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+},
+footerDivider: {
+    color: colors.placeholder,
+    alignItems: 'center',
+    alignContent: 'center',
+    fontSize: 11,
+},
+copyright: {
+    fontSize: 11,
+    color: colors.placeholder,
+},
 });
