@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,9 +9,35 @@ import {
   StatusBar,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import SignInModal from '../components/SignInModal';
 import { colors } from '../theme/colors';
 
 export default function SignInScreen() {
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const handleSignIn = async (email) => {
+    try {
+      const response = await fetch('http://192.168.1.72:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Alert.alert('Success', `Welcome back, ${data.name}!`);
+        setModalVisible(false);
+      } else {
+        Alert.alert('Login Failed', data.message || 'Invalid email.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Unable to login. Please try again later.');
+    }
+  };
+
   return (
     <ScrollView 
       contentContainerStyle={styles.container}
@@ -47,7 +73,7 @@ export default function SignInScreen() {
           <Text style={styles.buttonText}>Continue with Google</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
           <MaterialCommunityIcons name="email-outline" size={24} color="white" />
           <Text style={styles.buttonText}>Continue with email</Text>
         </TouchableOpacity>
@@ -73,6 +99,14 @@ export default function SignInScreen() {
 
         <Text style={styles.copyright}>© 2025 NotY Labs, Inc.</Text>
       </View>
+
+      {/* SignIn Modal */}
+      <SignInModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSignIn={handleSignIn}
+      />
+
     </ScrollView>
   );
 }
