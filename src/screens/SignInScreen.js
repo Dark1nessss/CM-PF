@@ -18,7 +18,7 @@ export default function SignInScreen({ navigation }) {
 
   const handleSignIn = async (email, password) => {
     try {
-      const response = await fetch('http://192.168.1.135:5000/auth/login', {
+      const response = await fetch('http://192.168.1.72:5000/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,10 +28,10 @@ export default function SignInScreen({ navigation }) {
       const data = await response.json();
   
       if (response.ok) {
+        await AsyncStorage.setItem('authToken', data.token);
         Alert.alert('Success', 'You are now logged in!');
-        console.log(data);
+        navigation.replace('Home');
         setModalVisible(false);
-        // Use replace to remove the SignIn screen from the stack
         navigation.replace('Home');
       } else {
         Alert.alert('Login Failed', data.message || 'Invalid credentials');
@@ -95,7 +95,7 @@ export default function SignInScreen({ navigation }) {
       <SignInModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
-        onSignIn={handleSignIn}
+        onSignIn={(email, password) => handleSignIn(email, password)}
       />
     </ScrollView>
   );
