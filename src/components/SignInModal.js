@@ -7,10 +7,10 @@ import {
   TextInput,
   Modal,
   TouchableWithoutFeedback,
-  Alert,
   Animated,
   Keyboard,
   Platform,
+  Alert,
 } from 'react-native';
 import { colors } from '../theme/colors';
 
@@ -21,7 +21,6 @@ export default function EmailSignInModal({ visible, onClose, onSignIn }) {
   const [passwordError, setPasswordError] = useState('');
   const slideAnim = useRef(new Animated.Value(300)).current;
   const keyboardOffset = useRef(new Animated.Value(0)).current;
-  const buttonMarginAnim = useRef(new Animated.Value(16)).current;
 
   useEffect(() => {
     const keyboardShowListener = Keyboard.addListener('keyboardDidShow', (event) => {
@@ -62,15 +61,10 @@ export default function EmailSignInModal({ visible, onClose, onSignIn }) {
     }
   }, [visible]);
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const handleSignIn = async () => {
+  const validateInput = () => {
     let valid = true;
 
-    if (!email || !validateEmail(email)) {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setEmailError('Please enter a valid email address.');
       valid = false;
     } else {
@@ -84,33 +78,12 @@ export default function EmailSignInModal({ visible, onClose, onSignIn }) {
       setPasswordError('');
     }
 
-    Animated.timing(buttonMarginAnim, {
-      toValue: valid ? 16 : 40,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
+    return valid;
+  };
 
-    if (valid) {
-      try {
-        const response = await fetch('http://localhost:5000/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, password }),
-        });
-  
-        const data = await response.json();
-  
-        if (response.ok) {
-          Alert.alert('Success', 'You are now logged in!');
-          onSignIn(data.token);
-        } else {
-          Alert.alert('Login Failed', data.message || 'Invalid credentials');
-        }
-      } catch (error) {
-        Alert.alert('Error', 'Unable to login. Please try again later.');
-      }
+  const handleSignInPress = () => {
+    if (validateInput()) {
+      onSignIn(email, password);
     }
   };
 
@@ -124,7 +97,7 @@ export default function EmailSignInModal({ visible, onClose, onSignIn }) {
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.modalBackground}>
           <TouchableWithoutFeedback>
-          <Animated.View
+            <Animated.View
               style={[
                 styles.modalContent,
                 {
@@ -147,7 +120,7 @@ export default function EmailSignInModal({ visible, onClose, onSignIn }) {
                   autoCapitalize="none"
                   autoCorrect={false}
                 />
-                {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+                {emailError && <Text style={styles.errorText}>{emailError}</Text>}
               </View>
               <View style={styles.inputContainer}>
                 <TextInput
@@ -161,25 +134,11 @@ export default function EmailSignInModal({ visible, onClose, onSignIn }) {
                   onChangeText={setPassword}
                   secureTextEntry
                 />
-                {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+                {passwordError && <Text style={styles.errorText}>{passwordError}</Text>}
               </View>
-              <TouchableOpacity style={[
-                  styles.button,{
-                    transform: [
-                      {
-                        translateY: buttonMarginAnim.interpolate({
-                          inputRange: [16, 56],
-                          outputRange: Platform.select({
-                            ios: [0, -16],
-                            android: [0, -16],
-                            default: [0, -24],
-                          }),
-                        }),
-                      },
-                    ],
-                  },
-                ]}
-                onPress={handleSignIn}
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleSignInPress}
               >
                 <Text style={styles.buttonText}>Continue</Text>
               </TouchableOpacity>

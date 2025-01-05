@@ -7,59 +7,51 @@ import {
   Image,
   ScrollView,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import SignInModal from '../components/SignInModal';
 import { colors } from '../theme/colors';
 
-export default function SignInScreen() {
+export default function SignInScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
 
-  const handleSignIn = async (email) => {
+  const handleSignIn = async (email, password) => {
     try {
-      const response = await fetch('http://localhost:5000/auth/login', {
+      const response = await fetch('http://192.168.1.135:5000/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await response.json();
-
+  
       if (response.ok) {
-        await localStorage.setItem('authToken', data.token);
+        Alert.alert('Success', 'You are now logged in!');
+        console.log(data);
         setModalVisible(false);
+        // Use replace to remove the SignIn screen from the stack
         navigation.replace('Home');
       } else {
-        Alert.alert('Login Failed', data.message || 'Invalid email.');
+        Alert.alert('Login Failed', data.message || 'Invalid credentials');
       }
     } catch (error) {
-      Alert.alert('Error', 'Something went wrong. Please try again later.');
-      console.error('Login error:', error.message);
+      Alert.alert('Error', 'Unable to login. Please try again later.');
     }
   };
 
   return (
-    <ScrollView 
+    <ScrollView
       contentContainerStyle={styles.container}
       bounces={false}
     >
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
-      
-      {/* Logo */}
       <View style={styles.logoContainer}>
-        <Image
-          source={require('../../assets/favicon.png')}
-          style={styles.logo}
-        />
+        <Image source={require('../../assets/favicon.png')} style={styles.logo} />
       </View>
-
-      {/* Header */}
       <Text style={styles.headerTitle}>Think it. Make it.</Text>
       <Text style={styles.headerSubtitle}>Log in to your NotY account</Text>
-
-      {/* Illustration */}
       <View style={styles.illustrationContainer}>
         <Image
           source={require('../../assets/NotY_Login.png')}
@@ -67,20 +59,19 @@ export default function SignInScreen() {
           resizeMode="contain"
         />
       </View>
-
-      {/* Buttons */}
       <View style={styles.buttonsContainer}>
         <TouchableOpacity style={styles.button}>
-        <MaterialCommunityIcons name="google" size={24} color="white" />
+          <MaterialCommunityIcons name="google" size={24} color="white" />
           <Text style={styles.buttonText}>Continue with Google</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setModalVisible(true)}
+        >
           <MaterialCommunityIcons name="email-outline" size={24} color="white" />
           <Text style={styles.buttonText}>Continue with email</Text>
         </TouchableOpacity>
       </View>
-
       {/* Footer */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>
@@ -101,14 +92,11 @@ export default function SignInScreen() {
 
         <Text style={styles.copyright}>© 2025 NotY Labs, Inc.</Text>
       </View>
-
-      {/* SignIn Modal */}
       <SignInModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onSignIn={handleSignIn}
       />
-
     </ScrollView>
   );
 }
