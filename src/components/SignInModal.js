@@ -20,6 +20,7 @@ export default function EmailSignInModal({ visible, onClose, onSignIn }) {
   const [passwordError, setPasswordError] = useState('');
   const slideAnim = useRef(new Animated.Value(300)).current;
   const keyboardOffset = useRef(new Animated.Value(0)).current;
+  const buttonMarginAnim = useRef(new Animated.Value(16)).current;
 
   useEffect(() => {
     const keyboardShowListener = Keyboard.addListener('keyboardDidShow', (event) => {
@@ -82,6 +83,12 @@ export default function EmailSignInModal({ visible, onClose, onSignIn }) {
       setPasswordError('');
     }
 
+    Animated.timing(buttonMarginAnim, {
+      toValue: valid ? 16 : 40,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+
     if (valid) {
       onSignIn({ email, password });
     }
@@ -136,7 +143,12 @@ export default function EmailSignInModal({ visible, onClose, onSignIn }) {
                 />
                 {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
               </View>
-              <TouchableOpacity style={styles.button} onPress={handleSignIn}>
+              <TouchableOpacity style={[
+                  styles.button,
+                  { marginTop: buttonMarginAnim },
+                ]}
+                onPress={handleSignIn}
+              >
                 <Text style={styles.buttonText}>Continue</Text>
               </TouchableOpacity>
             </Animated.View>
@@ -189,7 +201,7 @@ const styles = StyleSheet.create({
     borderColor: colors.error,
   },
   button: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.secondary,
     width: '100%',
     paddingVertical: 14,
     borderRadius: 6,
