@@ -10,6 +10,7 @@ import {
   Alert,
   Animated,
   Keyboard,
+  Platform,
 } from 'react-native';
 import { colors } from '../theme/colors';
 
@@ -86,7 +87,7 @@ export default function EmailSignInModal({ visible, onClose, onSignIn }) {
     Animated.timing(buttonMarginAnim, {
       toValue: valid ? 16 : 40,
       duration: 200,
-      useNativeDriver: false,
+      useNativeDriver: true,
     }).start();
 
     if (valid) {
@@ -144,8 +145,20 @@ export default function EmailSignInModal({ visible, onClose, onSignIn }) {
                 {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
               </View>
               <TouchableOpacity style={[
-                  styles.button,
-                  { marginTop: buttonMarginAnim },
+                  styles.button,{
+                    transform: [
+                      {
+                        translateY: buttonMarginAnim.interpolate({
+                          inputRange: [16, 56],
+                          outputRange: Platform.select({
+                            ios: [0, -16],
+                            android: [0, -16],
+                            default: [0, -24],
+                          }),
+                        }),
+                      },
+                    ],
+                  },
                 ]}
                 onPress={handleSignIn}
               >
@@ -207,7 +220,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
+    paddingHorizontal: 16,
   },
   buttonText: {
     fontSize: 16,
@@ -218,6 +231,6 @@ const styles = StyleSheet.create({
     color: colors.error,
     fontSize: 12,
     fontStyle: 'italic',
-    marginTop: 4,
+    paddingHorizontal: 4,
   },
 });
