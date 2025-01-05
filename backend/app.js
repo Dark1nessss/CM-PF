@@ -18,6 +18,6 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
 
 module.exports = app;

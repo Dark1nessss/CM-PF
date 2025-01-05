@@ -67,7 +67,7 @@ export default function EmailSignInModal({ visible, onClose, onSignIn }) {
     return emailRegex.test(email);
   };
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     let valid = true;
 
     if (!email || !validateEmail(email)) {
@@ -91,7 +91,26 @@ export default function EmailSignInModal({ visible, onClose, onSignIn }) {
     }).start();
 
     if (valid) {
-      onSignIn({ email, password });
+      try {
+        const response = await fetch('http://localhost:5000/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+  
+        const data = await response.json();
+  
+        if (response.ok) {
+          Alert.alert('Success', 'You are now logged in!');
+          onSignIn(data.token);
+        } else {
+          Alert.alert('Login Failed', data.message || 'Invalid credentials');
+        }
+      } catch (error) {
+        Alert.alert('Error', 'Unable to login. Please try again later.');
+      }
     }
   };
 

@@ -17,24 +17,26 @@ export default function SignInScreen() {
 
   const handleSignIn = async (email) => {
     try {
-      const response = await fetch('http://192.168.1.72:5000/api/auth/login', {
+      const response = await fetch('http://localhost:5000/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        Alert.alert('Success', `Welcome back, ${data.name}!`);
+        await localStorage.setItem('authToken', data.token);
         setModalVisible(false);
+        navigation.replace('Home');
       } else {
         Alert.alert('Login Failed', data.message || 'Invalid email.');
       }
     } catch (error) {
-      Alert.alert('Error', 'Unable to login. Please try again later.');
+      Alert.alert('Error', 'Something went wrong. Please try again later.');
+      console.error('Login error:', error.message);
     }
   };
 
