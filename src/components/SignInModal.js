@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { colors } from '../theme/colors';
 
-export default function EmailSignInModal({ visible, onClose, onSignIn }) {
+export default function EmailSignInModal({ visible, onClose, onSignIn, navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');

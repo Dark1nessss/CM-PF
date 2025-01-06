@@ -12,6 +12,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import SignInModal from '../components/SignInModal';
 import { colors } from '../theme/colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SignInScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
@@ -25,14 +26,13 @@ export default function SignInScreen({ navigation }) {
         },
         body: JSON.stringify({ email, password }),
       });
-      const data = await response.json();
   
       if (response.ok) {
+        const data = await response.json();
         await AsyncStorage.setItem('authToken', data.token);
         Alert.alert('Success', 'You are now logged in!');
         navigation.replace('Home');
         setModalVisible(false);
-        navigation.replace('Home');
       } else {
         Alert.alert('Login Failed', data.message || 'Invalid credentials');
       }
@@ -42,7 +42,7 @@ export default function SignInScreen({ navigation }) {
   };
 
   return (
-    <ScrollView
+      <ScrollView
       contentContainerStyle={styles.container}
       bounces={false}
     >
@@ -96,6 +96,7 @@ export default function SignInScreen({ navigation }) {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onSignIn={(email, password) => handleSignIn(email, password)}
+        navigation={navigation} 
       />
     </ScrollView>
   );
