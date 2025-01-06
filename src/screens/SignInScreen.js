@@ -7,7 +7,6 @@ import {
   Image,
   ScrollView,
   StatusBar,
-  Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import SignInModal from '../components/SignInModal';
@@ -30,14 +29,14 @@ export default function SignInScreen({ navigation }) {
       if (response.ok) {
         const data = await response.json();
         await AsyncStorage.setItem('authToken', data.token);
-        Alert.alert('Success', 'You are now logged in!');
+        console.log("Sucessfully logged in")
         navigation.replace('Home');
         setModalVisible(false);
       } else {
-        Alert.alert('Login Failed', data.message || 'Invalid credentials');
+        console.log("Failed to login")
       }
     } catch (error) {
-      Alert.alert('Error', 'Unable to login. Please try again later.');
+     console.log(error);
     }
   };
 

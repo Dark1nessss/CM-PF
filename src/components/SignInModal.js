@@ -9,8 +9,6 @@ import {
   TouchableWithoutFeedback,
   Animated,
   Keyboard,
-  Platform,
-  Alert,
 } from 'react-native';
 import { colors } from '../theme/colors';
 
