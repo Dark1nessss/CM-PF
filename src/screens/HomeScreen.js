@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform, StatusBar, ScrollView } from 'react-native';
 import { Entypo } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
@@ -7,11 +7,45 @@ import MenuModal from '../components/MenuModal';
 import Favorites from '../components/JumpIn';
 import FavoriteCard from '../components/FavoriteCard';
 import OtherPages from '../components/OtherPages';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function HomeScreen() {
+export default function HomeScreen( visible ) {
   const [modalVisible, setModalVisible] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
 
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    if (visible) {
+      fetchUserProfile();
+    }
+  }, [visible]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch('http://localhost:5000/auth/profile', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data);
+        console.log(data);
+      } else {
+        console.error('Failed to fetch user profile');
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const favoriteData = [
     {
@@ -55,14 +89,26 @@ export default function HomeScreen() {
         barStyle={Platform.OS === 'ios' ? 'light-content' : 'light-content'}
         backgroundColor={colors.background}
       />
+      {loading ? (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+      ) : (
+        <>
       <View style={styles.header}>
         <TouchableOpacity style={styles.leftSection} onPress={() => setModalVisible(true)}>
           <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>D</Text>
+            <Text style={styles.logoText}>
+              {user?.username?.charAt(0).toUpperCase() || '?'}
+            </Text>
           </View>
           <View>
-            <Text style={styles.title}>Dark1ness's NotY</Text>
-            <Text style={styles.subtitle}>frankhorn99@gmail.com</Text>
+            <Text style={styles.title}>
+            {user?.username ? `${user.username}'s NotY` : 'Unknown NotY'}
+            </Text>
+            <Text style={styles.subtitle}>
+              {user?.email}
+            </Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconContainer} onPress={() => setMenuVisible(true)}>
@@ -81,6 +127,8 @@ export default function HomeScreen() {
       <FavoriteCard items={favoriteData} />
       <Text style={styles.sectionTitle}>Other Pages...</Text>
       <OtherPages items={testData} />
+      </>
+      )}
       <AccountModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -143,5 +191,15 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     padding: 8,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 50,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: colors.placeholder,
   },
 });

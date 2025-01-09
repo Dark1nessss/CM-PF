@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,10 +7,45 @@ import {
   Modal,
   TouchableWithoutFeedback,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Entypo } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 
 export default function AccountModal({ visible, onClose }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    if (visible) {
+      fetchUserProfile();
+    }
+  }, [visible]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch('http://localhost:5000/auth/profile', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data);
+        console.log(data);
+      } else {
+        console.error('Failed to fetch user profile');
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Modal
       visible={visible}
@@ -21,16 +56,25 @@ export default function AccountModal({ visible, onClose }) {
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.modalContainer}>
           <TouchableWithoutFeedback>
-            <View style={styles.modalContent}>
+            <View style={styles.modalContent}>{loading ? (
+                <Text style={styles.modalEmail}>Loading...</Text>
+              ) : (
+              <>
               <Text style={styles.modalTitle}>Accounts</Text>
-              <Text style={styles.modalEmail}>frankhorn99@gmail.com</Text>
+              <Text style={styles.modalEmail}>{user?.email}</Text>
               <View style={styles.accountItem}>
                 <View style={styles.logoContainerSmall}>
-                  <Text style={styles.logoText}>D</Text>
+                  <Text style={styles.logoText}>
+                  {user?.username?.charAt(0).toUpperCase() || '?'}
+                  </Text>
                 </View>
-                <Text style={styles.accountName}>Dark1ness's NotY</Text>
+                <Text style={styles.accountName}>
+                  {user?.username ? `${user.username}'s NotY` : 'Unknown NotY'}
+                </Text>
                 <Entypo name="check" size={20} color={colors.primary} />
               </View>
+              </>
+              )}
               <TouchableOpacity style={styles.accountOption}>
                 <Text style={styles.optionText}>+ Add an account</Text>
               </TouchableOpacity>

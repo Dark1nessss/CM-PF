@@ -18,7 +18,7 @@ export default function SignInScreen({ navigation }) {
 
   const handleSignIn = async (email, password) => {
     try {
-      const response = await fetch('http://192.168.1.72:5000/auth/login', {
+      const response = await fetch('http://localhost:5000/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
