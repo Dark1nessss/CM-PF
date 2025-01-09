@@ -75,7 +75,6 @@ export default function AccountModal({ visible, onClose }) {
               ) : (
               <>
               <Text style={styles.modalTitle}>Accounts</Text>
-              <Text style={styles.modalEmail}>{user?.email}</Text>
               <View style={styles.accountItem}>
                 <View style={styles.logoContainerSmall}>
                   <Text style={styles.logoText}>
