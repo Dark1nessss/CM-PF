@@ -10,10 +10,13 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Entypo } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
+import { useNavigation } from '@react-navigation/native';
 
 export default function AccountModal({ visible, onClose }) {
+  const navigation = useNavigation();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [logoutError, setLogoutError] = useState('');
   
   useEffect(() => {
     if (visible) {
@@ -43,6 +46,17 @@ export default function AccountModal({ visible, onClose }) {
       console.error('Error fetching user profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      onClose();
+      await AsyncStorage.removeItem('authToken');
+      navigation.replace('SignIn');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      setLogoutError('An error occurred while logging out. Please try again.');
     }
   };
 
@@ -78,11 +92,16 @@ export default function AccountModal({ visible, onClose }) {
               <TouchableOpacity style={styles.accountOption}>
                 <Text style={styles.optionText}>+ Add an account</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.accountOption}>
+              <TouchableOpacity style={styles.accountOption} onPress={handleLogout}>
                 <Text style={[styles.optionText, { color: colors.accent }]}>
                   Log out
                 </Text>
               </TouchableOpacity>
+              {logoutError ? (
+                <Text style={styles.errorText}>
+                  {logoutError}
+                </Text>
+              ) : null}
             </View>
           </TouchableWithoutFeedback>
         </View>
@@ -144,5 +163,11 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 16,
     color: colors.headerText,
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: 12,
+    marginTop: 8,
+    fontStyle: 'italic',
   },
 });

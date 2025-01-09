@@ -29,7 +29,6 @@ export default function SignInScreen({ navigation }) {
       if (response.ok) {
         const data = await response.json();
         await AsyncStorage.setItem('authToken', data.token);
-        console.log("Sucessfully logged in")
         navigation.replace('Home');
         setModalVisible(false);
       } else {
