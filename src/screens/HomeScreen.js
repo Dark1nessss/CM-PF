@@ -65,7 +65,6 @@ export default function HomeScreen( visible ) {
   
         setFavorites(favoritesData);
         setOtherPages(otherPagesData);
-        console.log('OtherPages API Response:', data);
       } catch (error) {
         console.error('Failed to fetch data:', error);
       } finally {
