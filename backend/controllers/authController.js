@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const Favorite = require('../models/Favorite');
+const OtherPage = require('../models/OtherPage');
 
 // Generate a JWT token
 const generateToken = (id) => {
@@ -80,4 +82,26 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getUserProfile };
+// Fetch Favorites
+const getFavorites = async (req, res) => {
+  try {
+    const favorites = await Favorite.find();
+    res.status(200).json(favorites);
+  } catch (error) {
+    console.error('Error fetching favorites:', error);
+    res.status(500).json({ message: 'Server error fetching favorites' });
+  }
+};
+
+// Fetch Other Pages
+const getOtherPages = async (req, res) => {
+  try {
+    const otherPages = await OtherPage.find();
+    res.status(200).json(otherPages);
+  } catch (error) {
+    console.error('Error fetching other pages:', error);
+    res.status(500).json({ message: 'Server error fetching other pages' });
+  }
+};
+
+module.exports = { registerUser, loginUser, getUserProfile, getFavorites, getOtherPages };

@@ -52,10 +52,10 @@ export default function HomeScreen( visible ) {
       try {
         const token = await AsyncStorage.getItem('authToken');
         const [favoritesResponse, otherPagesResponse] = await Promise.all([
-          fetch('http://localhost:5000/api/favorites', {
+          fetch('http://localhost:5000/auth/favorites', {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch('http://localhost:5000/api/otherPages', {
+          fetch('http://localhost:5000/auth/otherPages', {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
