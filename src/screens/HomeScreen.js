@@ -12,9 +12,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function HomeScreen( visible ) {
   const [modalVisible, setModalVisible] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
-
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState([]);
+  const [otherPages, setOtherPages] = useState([]);
   
   useEffect(() => {
     if (visible) {
@@ -46,41 +47,33 @@ export default function HomeScreen( visible ) {
     }
   };
 
-  const favoriteData = [
-    {
-      title: 'Meal Planer',
-      subPages: [
-        { title: 'Meat Diet' },
-        { title: 'Fish Diet' },
-      ],
-    },
-  ];
-
-  const testData = [
-    {
-      title: 'Main Page 1',
-      subPages: [
-        { title: 'SubPage 1.1' },
-        { title: 'SubPage 1.2' },
-      ],
-    },
-    {
-      title: 'Main Page 2',
-      subPages: [
-        { title: 'SubPage 2.1' },
-        { title: 'SubPage 2.2' },
-      ],
-    },
-    {
-      title: 'Main Page 3',
-      subPages: [
-        { title: 'SubPage 3.1' },
-        {
-          title: 'SubPage 3.2',
-        },
-      ],
-    },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = await AsyncStorage.getItem('authToken');
+        const [favoritesResponse, otherPagesResponse] = await Promise.all([
+          fetch('http://localhost:5000/api/favorites', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch('http://localhost:5000/api/otherPages', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+        
+        const favoritesData = await favoritesResponse.json();
+        const otherPagesData = await otherPagesResponse.json();
+  
+        setFavorites(favoritesData);
+        setOtherPages(otherPagesData);
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchData();
+  }, []);
 
   return (
     <ScrollView style={styles.container}>
@@ -90,7 +83,7 @@ export default function HomeScreen( visible ) {
       />
       {loading ? (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading...</Text>
+        <Text style={styles.loadingText}>Loading Header...</Text>
       </View>
       ) : (
         <>
@@ -114,18 +107,22 @@ export default function HomeScreen( visible ) {
           <Entypo name="dots-three-horizontal" size={24} color={colors.icon} />
         </TouchableOpacity>
       </View>
-      <Favorites
-        items={[
-          { name: 'Weekly Workout Plan' },
-          { name: 'Travel Planner' },
-          { name: 'Meal Planner' },
-        ]}
-        onSelect={(item) => console.log(`Selected: ${item.name}`)}
+      </>
+      )}
+      {loading ? (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading Pages...</Text>
+      </View>
+      ) : (
+        <>
+      <Favorites 
+        items={favorites} 
+        onSelect={(item) => console.log(`Selected: ${item.name}`)} 
       />
       <Text style={styles.sectionTitle}>Favorites</Text>
-      <FavoriteCard items={favoriteData} />
+      <FavoriteCard items={favorites} />
       <Text style={styles.sectionTitle}>Other Pages...</Text>
-      <OtherPages items={testData} />
+      <OtherPages items={otherPages} />
       </>
       )}
       <AccountModal
