@@ -48,7 +48,7 @@ export default function HomeScreen( visible ) {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchpages = async () => {
       try {
         const token = await AsyncStorage.getItem('authToken');
         const [favoritesResponse, otherPagesResponse] = await Promise.all([
@@ -65,6 +65,7 @@ export default function HomeScreen( visible ) {
   
         setFavorites(favoritesData);
         setOtherPages(otherPagesData);
+        console.log('OtherPages API Response:', data);
       } catch (error) {
         console.error('Failed to fetch data:', error);
       } finally {
@@ -72,7 +73,7 @@ export default function HomeScreen( visible ) {
       }
     };
   
-    fetchData();
+    fetchpages();
   }, []);
 
   return (
