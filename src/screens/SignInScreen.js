@@ -13,7 +13,7 @@ import SignInModal from '../components/SignInModal';
 import { colors } from '../theme/colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function SignInScreen({ navigation }) {
+export default function SignInScreen({ navigation, route }) {
   const [modalVisible, setModalVisible] = useState(false);
 
   const handleSignIn = async (email, password) => {
@@ -25,17 +25,18 @@ export default function SignInScreen({ navigation }) {
         },
         body: JSON.stringify({ email, password }),
       });
-  
+
       if (response.ok) {
         const data = await response.json();
         await AsyncStorage.setItem('authToken', data.token);
-        navigation.replace('Home');
+
+        route.params.onLoginSuccess();
         setModalVisible(false);
       } else {
-        console.log("Failed to login")
+        console.log("Failed to login");
       }
     } catch (error) {
-     console.log(error);
+      console.log(error);
     }
   };
 

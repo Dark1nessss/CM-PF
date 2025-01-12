@@ -6,30 +6,45 @@ import { colors } from '../theme/colors';
 const OtherPages = ({ items = [] }) => {
   const [expandedItems, setExpandedItems] = useState({});
   const [expandedSubPages, setExpandedSubPages] = useState({});
-  const [fadeAnims] = useState(() => 
-    Object.fromEntries(items.map((_, index) => [index, new Animated.Value(0)]))
-  );
+  const [fadeAnims, setFadeAnims] = useState({});
+  const [rotationAnims, setRotationAnims] = useState({});
+
+  useEffect(() => {
+    const initAnimations = {};
+    const initRotations = {};
+
+    items.forEach((item, index) => {
+      initAnimations[index] = new Animated.Value(0);
+      initRotations[index] = new Animated.Value(0);
+
+      if (item.subPages) {
+        item.subPages.forEach((_, subIndex) => {
+          const key = `${index}-${subIndex}`;
+          initAnimations[key] = new Animated.Value(0);
+          initRotations[key] = new Animated.Value(0);
+        });
+      }
+    });
+
+    setFadeAnims(initAnimations);
+    setRotationAnims(initRotations);
+  }, [items]);
 
   const toggleExpanded = (index) => {
     setExpandedItems((prev) => {
       const newState = { ...prev, [index]: !prev[index] };
-      
+
       Animated.timing(fadeAnims[index], {
         toValue: newState[index] ? 1 : 0,
         duration: 200,
         useNativeDriver: true,
       }).start();
 
-      // Close subpages when main page is closed
-      if (!newState[index]) {
-        setExpandedSubPages((prevSubPages) => {
-          const newSubPages = { ...prevSubPages };
-          items[index].subPages?.forEach((_, subIndex) => {
-            delete newSubPages[`${index}-${subIndex}`];
-          });
-          return newSubPages;
-        });
-      }
+      Animated.timing(rotationAnims[index], {
+        toValue: newState[index] ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
 
       return newState;
     });
@@ -37,69 +52,93 @@ const OtherPages = ({ items = [] }) => {
 
   const toggleSubPage = (itemIndex, subPageIndex) => {
     const key = `${itemIndex}-${subPageIndex}`;
-    setExpandedSubPages((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+    setExpandedSubPages((prev) => {
+      const newState = { ...prev, [key]: !prev[key] };
+
+      Animated.timing(fadeAnims[key], {
+        toValue: newState[key] ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+
+      Animated.timing(rotationAnims[key], {
+        toValue: newState[key] ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+
+      return newState;
+    });
   };
 
-  const getSubPageContent = (item, index) => {
-    if (!item.subPages || item.subPages.length === 0) {
+  const getRotationStyle = (anim) =>
+    anim?.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['0deg', '180deg']
+    });
+
+  const renderSubPages = (subPages, itemIndex) => {
+    return subPages.map((subPage, subIndex) => {
+      const key = `${itemIndex}-${subIndex}`;
+
       return (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.noPagesText}>No pages inside</Text>
+        <View key={key}>
+          <View style={styles.subSectionRow}>
+            <TouchableOpacity
+              style={[styles.row, styles.subRow]}
+              onPress={() => toggleSubPage(itemIndex, subIndex)}
+            >
+              <Animated.View
+                style={{
+                  transform: [{ rotate: getRotationStyle(rotationAnims[key]) }],
+                }}
+              >
+                <Entypo
+                  name={expandedSubPages[key] ? 'chevron-down' : 'chevron-right'}
+                  size={20}
+                  color={colors.icon}
+                />
+              </Animated.View>
+              <Feather
+                name="file-text"
+                size={20}
+                color={colors.icon}
+                style={styles.iconMargin}
+              />
+              <Text style={styles.mainTitle}>{subPage.title}</Text>
+            </TouchableOpacity>
+            <View style={styles.row}>
+              <TouchableOpacity>
+                <Entypo
+                  name="dots-three-horizontal"
+                  size={20}
+                  color={colors.icon}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Entypo
+                  name="plus"
+                  size={20}
+                  color={colors.icon}
+                  style={styles.iconMargin}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {expandedSubPages[key] && subPage.subPages?.length > 0 && (
+            <Animated.View
+              style={[
+                styles.nestedContainer,
+                { opacity: fadeAnims[key] },
+              ]}
+            >
+              {renderSubPages(subPage.subPages, `${itemIndex}-${subIndex}`)}
+            </Animated.View>
+          )}
         </View>
       );
-    }
-
-    return item.subPages.map((subPage, subIndex) => (
-      <View key={subIndex}>
-        <View style={styles.subSectionRow}>
-          <TouchableOpacity
-            style={[styles.row, styles.subRow]}
-            onPress={() => toggleSubPage(index, subIndex)}
-          >
-            <Entypo
-              name={expandedSubPages[`${index}-${subIndex}`] ? 'chevron-down' : 'chevron-right'}
-              size={24}
-              color={colors.icon}
-            />
-            <Feather name="file-text" size={20} color={colors.icon} style={styles.iconMargin} />
-            <Text style={styles.mainTitle}>{subPage.title}</Text>
-          </TouchableOpacity>
-          <View style={styles.row}>
-            <TouchableOpacity>
-              <Entypo name="dots-three-horizontal" size={20} color={colors.icon} />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Entypo name="plus" size={20} color={colors.icon} style={styles.iconMargin} />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {expandedSubPages[`${index}-${subIndex}`] && subPage.subPages?.length > 0 && (
-          <View>
-            {subPage.subPages.map((nestedSubPage, nestedIndex) => (
-              <View key={nestedIndex} style={styles.subSectionRow}>
-                <View style={[styles.row, styles.nestedRow]}>
-                  <Entypo name="chevron-right" size={24} color={colors.icon} />
-                  <Feather name="file-text" size={20} color={colors.icon} style={styles.iconMargin} />
-                  <Text style={styles.mainTitle}>{nestedSubPage.title}</Text>
-                </View>
-                <View style={styles.row}>
-                  <TouchableOpacity>
-                    <Entypo name="dots-three-horizontal" size={20} color={colors.icon} />
-                  </TouchableOpacity>
-                  <TouchableOpacity>
-                    <Entypo name="plus" size={20} color={colors.icon} style={styles.iconMargin} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
-      </View>
-    ));
+    });
   };
 
   return (
@@ -113,20 +152,41 @@ const OtherPages = ({ items = [] }) => {
                 style={styles.row}
                 onPress={() => toggleExpanded(index)}
               >
-                <Entypo
-                  name={expandedItems[index] ? 'chevron-down' : 'chevron-right'}
-                  size={24}
+                <Animated.View
+                  style={{
+                    transform: [{ rotate: getRotationStyle(rotationAnims[index]) }],
+                  }}
+                >
+                  <Entypo
+                    name={expandedItems[index] ? 'chevron-down' : 'chevron-right'}
+                    size={24}
+                    color={colors.icon}
+                  />
+                </Animated.View>
+                <Feather
+                  name="file-text"
+                  size={20}
                   color={colors.icon}
+                  style={styles.iconMargin}
                 />
-                <Feather name="file-text" size={20} color={colors.icon} style={styles.iconMargin} />
                 <Text style={styles.mainTitle}>{item.title}</Text>
               </TouchableOpacity>
               <View style={styles.row}>
                 <TouchableOpacity>
-                  <Entypo name="dots-three-horizontal" size={20} color={colors.icon} style={styles.iconMargin} />
+                  <Entypo
+                    name="dots-three-horizontal"
+                    size={20}
+                    color={colors.icon}
+                    style={styles.iconMargin}
+                  />
                 </TouchableOpacity>
                 <TouchableOpacity>
-                  <Entypo name="plus" size={20} color={colors.icon} style={styles.iconMargin} />
+                  <Entypo
+                    name="plus"
+                    size={20}
+                    color={colors.icon}
+                    style={styles.iconMargin}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
@@ -135,12 +195,10 @@ const OtherPages = ({ items = [] }) => {
               <Animated.View
                 style={[
                   styles.subSectionContainer,
-                  {
-                    opacity: fadeAnims[index],
-                  }
+                  { opacity: fadeAnims[index] },
                 ]}
               >
-                {getSubPageContent(item, index)}
+                {item.subPages && renderSubPages(item.subPages, index)}
               </Animated.View>
             )}
           </View>
@@ -165,6 +223,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     opacity: 0.2,
   },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   mainSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -179,7 +241,6 @@ const styles = StyleSheet.create({
   },
   subSectionContainer: {
     paddingLeft: 24,
-    overflow: 'hidden',
   },
   subSectionRow: {
     flexDirection: 'row',
@@ -187,25 +248,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
   },
-  emptyContainer: {
-    paddingLeft: 40,
-    paddingVertical: 8,
-  },
-  noPagesText: {
-    fontSize: 14,
-    color: colors.headerText,
-    fontStyle: 'italic',
-    marginLeft: 40,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  subRow: {
+  nestedContainer: {
     paddingLeft: 16,
-  },
-  nestedRow: {
-    paddingLeft: 32,
   },
   iconMargin: {
     marginLeft: 16,

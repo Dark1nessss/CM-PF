@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Modal,
-  TouchableWithoutFeedback,
-} from 'react-native';
+import {View, Text, StyleSheet, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Entypo } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
@@ -50,12 +43,14 @@ export default function AccountModal({ visible, onClose }) {
 
   const handleLogout = async () => {
     try {
-      onClose();
       await AsyncStorage.removeItem('authToken');
-      navigation.replace('SignIn');
+      navigation.navigate('SignIn');
+      window.location.reload();
     } catch (error) {
       console.error('Error logging out:', error);
       setLogoutError('An error occurred while logging out. Please try again.');
+    } finally {
+      onClose();
     }
   };
 

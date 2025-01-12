@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, StatusBar, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, StatusBar, ScrollView, ActivityIndicator } from 'react-native';
 import { Entypo } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import AccountModal from '../components/AccountModal';
@@ -76,17 +76,17 @@ export default function HomeScreen( visible ) {
   }, []);
 
   return (
+    <>
+    {loading ? (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.grayMid} />
+      </View>
+    ) : (
     <ScrollView style={styles.container}>
       <StatusBar
         barStyle={Platform.OS === 'ios' ? 'light-content' : 'light-content'}
         backgroundColor={colors.background}
       />
-      {loading ? (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading Header...</Text>
-      </View>
-      ) : (
-        <>
       <View style={styles.header}>
         <TouchableOpacity style={styles.leftSection} onPress={() => setModalVisible(true)}>
           <View style={styles.logoContainer}>
@@ -107,14 +107,7 @@ export default function HomeScreen( visible ) {
           <Entypo name="dots-three-horizontal" size={24} color={colors.icon} />
         </TouchableOpacity>
       </View>
-      </>
-      )}
-      {loading ? (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading Pages...</Text>
-      </View>
-      ) : (
-        <>
+
       <JumpIn 
         items={favorites.map((item) => ({ ...item, name: item.title }))} 
         onSelect={(item) => console.log(`Selected: ${item.name}`)}
@@ -123,8 +116,6 @@ export default function HomeScreen( visible ) {
       <Favorite items={favorites} />
       <Text style={styles.sectionTitle}>Other Pages...</Text>
       <OtherPages items={otherPages} />
-      </>
-      )}
       <AccountModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -134,6 +125,8 @@ export default function HomeScreen( visible ) {
         onClose={() => setMenuVisible(false)} 
       />
     </ScrollView>
+    )}
+    </>
   );
 }
 
@@ -192,10 +185,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 50,
+    backgroundColor: colors.background,
   },
-  loadingText: {
-    fontSize: 16,
-    color: colors.placeholder,
-  },
+  loader: {
+    color: colors.grayMid,
+  }
 });
