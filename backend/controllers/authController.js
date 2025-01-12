@@ -103,6 +103,8 @@ const getOtherPages = async (req, res) => {
     res.status(500).json({ message: 'Server error fetching other pages' });
   }
 };
+
+// Validation of Tokens
 const validateToken = async (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
 
