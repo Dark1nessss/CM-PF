@@ -195,7 +195,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.headerText,
     fontStyle: 'italic',
-    marginLeft: 40,
   },
   row: {
     flexDirection: 'row',
