@@ -1,25 +1,144 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Entypo, Feather } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 
 const FavoriteCard = ({ items = [] }) => {
   const [expandedItems, setExpandedItems] = useState({});
   const [expandedSubPages, setExpandedSubPages] = useState({});
+  const [fadeAnims, setFadeAnims] = useState({});
+  const [rotationAnims, setRotationAnims] = useState({});
+
+  useEffect(() => {
+    const initAnimations = {};
+    const initRotations = {};
+
+    items.forEach((item, index) => {
+      initAnimations[index] = new Animated.Value(0);
+      initRotations[index] = new Animated.Value(0);
+
+      if (item.subPages) {
+        item.subPages.forEach((_, subIndex) => {
+          const key = `${index}-${subIndex}`;
+          initAnimations[key] = new Animated.Value(0);
+          initRotations[key] = new Animated.Value(0);
+        });
+      }
+    });
+
+    setFadeAnims(initAnimations);
+    setRotationAnims(initRotations);
+  }, [items]);
 
   const toggleExpanded = (index) => {
-    setExpandedItems((prev) => ({
-      ...prev,
-      [index]: !prev[index],
-    }));
+    setExpandedItems((prev) => {
+      const newState = { ...prev, [index]: !prev[index] };
+
+      Animated.timing(fadeAnims[index], {
+        toValue: newState[index] ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+
+      Animated.timing(rotationAnims[index], {
+        toValue: newState[index] ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+
+      return newState;
+    });
   };
 
   const toggleSubPage = (itemIndex, subPageIndex) => {
     const key = `${itemIndex}-${subPageIndex}`;
-    setExpandedSubPages((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+    setExpandedSubPages((prev) => {
+      const newState = { ...prev, [key]: !prev[key] };
+
+      Animated.timing(fadeAnims[key], {
+        toValue: newState[key] ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+
+      Animated.timing(rotationAnims[key], {
+        toValue: newState[key] ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+
+      return newState;
+    });
+  };
+
+  const getRotationStyle = (anim) =>
+    anim?.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['0deg', '180deg']
+    });
+
+  const renderSubPages = (subPages, itemIndex) => {
+    return subPages.map((subPage, subIndex) => {
+      const key = `${itemIndex}-${subIndex}`;
+
+      return (
+        <View key={key}>
+          <View style={styles.subSectionRow}>
+            <TouchableOpacity
+              style={[styles.row, styles.subRow]}
+              onPress={() => toggleSubPage(itemIndex, subIndex)}
+            >
+              <Animated.View
+                style={{
+                  transform: [{ rotate: getRotationStyle(rotationAnims[key]) }],
+                }}
+              >
+                <Entypo
+                  name={expandedSubPages[key] ? 'chevron-down' : 'chevron-right'}
+                  size={20}
+                  color={colors.icon}
+                />
+              </Animated.View>
+              <Feather
+                name="file-text"
+                size={20}
+                color={colors.icon}
+                style={styles.iconMargin}
+              />
+              <Text style={styles.mainTitle}>{subPage.title}</Text>
+            </TouchableOpacity>
+            <View style={styles.row}>
+              <TouchableOpacity>
+                <Entypo
+                  name="dots-three-horizontal"
+                  size={20}
+                  color={colors.icon}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Entypo
+                  name="plus"
+                  size={20}
+                  color={colors.icon}
+                  style={styles.iconMargin}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {expandedSubPages[key] && subPage.subPages?.length > 0 && (
+            <Animated.View
+              style={[
+                styles.nestedContainer,
+                { opacity: fadeAnims[key] },
+              ]}
+            >
+              {renderSubPages(subPage.subPages, `${itemIndex}-${subIndex}`)}
+            </Animated.View>
+          )}
+        </View>
+      );
+    });
   };
 
   return (
@@ -28,88 +147,59 @@ const FavoriteCard = ({ items = [] }) => {
         <View key={index}>
           {index > 0 && <View style={styles.divider} />}
           <View style={styles.itemContainer}>
-            {/* Main Section */}
             <View style={styles.mainSection}>
               <TouchableOpacity
                 style={styles.row}
                 onPress={() => toggleExpanded(index)}
               >
-                <Entypo
-                  name={expandedItems[index] ? 'chevron-down' : 'chevron-right'}
-                  size={24}
+                <Animated.View
+                  style={{
+                    transform: [{ rotate: getRotationStyle(rotationAnims[index]) }],
+                  }}
+                >
+                  <Entypo
+                    name={expandedItems[index] ? 'chevron-down' : 'chevron-right'}
+                    size={24}
+                    color={colors.icon}
+                  />
+                </Animated.View>
+                <Feather
+                  name="file-text"
+                  size={20}
                   color={colors.icon}
+                  style={styles.iconMargin}
                 />
-                <Feather name="file-text" size={20} color={colors.icon} style={styles.iconMargin} />
                 <Text style={styles.mainTitle}>{item.title}</Text>
               </TouchableOpacity>
               <View style={styles.row}>
                 <TouchableOpacity>
-                  <Entypo name="dots-three-horizontal" size={20} color={colors.icon} style={styles.iconMargin} />
+                  <Entypo
+                    name="dots-three-horizontal"
+                    size={20}
+                    color={colors.icon}
+                    style={styles.iconMargin}
+                  />
                 </TouchableOpacity>
                 <TouchableOpacity>
-                  <Entypo name="plus" size={20} color={colors.icon} style={styles.iconMargin} />
+                  <Entypo
+                    name="plus"
+                    size={20}
+                    color={colors.icon}
+                    style={styles.iconMargin}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
 
-            {/* Sub Sections */}
             {expandedItems[index] && (
-              <View style={styles.subSectionContainer}>
-                {!item.subPages || item.subPages.length === 0 ? (
-                  <Text style={styles.noPagesText}>No pages inside</Text>
-                ) : (
-                  item.subPages.map((subPage, subIndex) => (
-                    <View key={subIndex}>
-                      {/* SubPage Row */}
-                      <View style={styles.subSectionRow}>
-                        <TouchableOpacity
-                          style={[styles.row, styles.subRow]}
-                          onPress={() => toggleSubPage(index, subIndex)}
-                        >
-                          <Entypo
-                            name={expandedSubPages[`${index}-${subIndex}`] ? 'chevron-down' : 'chevron-right'}
-                            size={24}
-                            color={colors.icon}
-                          />
-                          <Feather name="file-text" size={20} color={colors.icon} style={styles.iconMargin} />
-                          <Text style={styles.mainTitle}>{subPage.title}</Text>
-                        </TouchableOpacity>
-                        <View style={styles.row}>
-                          <TouchableOpacity>
-                            <Entypo name="dots-three-horizontal" size={20} color={colors.icon} />
-                          </TouchableOpacity>
-                          <TouchableOpacity>
-                            <Entypo name="plus" size={20} color={colors.icon} style={styles.iconMargin} />
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-
-                      {/* Nested SubPages */}
-                      {expandedSubPages[`${index}-${subIndex}`] && subPage.subPages?.length > 0 && (
-                        <View>
-                          {subPage.subPages.map((nestedSubPage, nestedIndex) => (
-                            <View key={nestedIndex} style={styles.subSectionRow}>
-                              <View style={[styles.row, styles.nestedRow]}>
-                                <Entypo name="chevron-right" size={24} color={colors.icon} />
-                                <Feather name="file-text" size={20} color={colors.icon} style={styles.iconMargin} />
-                                <Text style={styles.mainTitle}>{nestedSubPage.title}</Text>
-                              </View>
-                              <View style={styles.row}>
-                                <TouchableOpacity>
-                                  <Entypo name="dots-three-horizontal" size={20} color={colors.icon} />
-                                </TouchableOpacity>
-                                <TouchableOpacity>
-                                  <Entypo name="plus" size={20} color={colors.icon} style={styles.iconMargin} />
-                                </TouchableOpacity>
-                              </View>
-                            </View>
-                          ))}
-                        </View>
-                      )}
-                    </View>
-                  ))
-                )}
-              </View>
+              <Animated.View
+                style={[
+                  styles.subSectionContainer,
+                  { opacity: fadeAnims[index] },
+                ]}
+              >
+                {item.subPages && renderSubPages(item.subPages, index)}
+              </Animated.View>
             )}
           </View>
         </View>
@@ -123,6 +213,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.cardBackground,
     borderRadius: 8,
     overflow: 'hidden',
+    marginBottom: 20,
   },
   itemContainer: {
     padding: 12,
@@ -131,6 +222,10 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: colors.border,
     opacity: 0.2,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   mainSection: {
     flexDirection: 'row',
@@ -153,21 +248,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
   },
-  noPagesText: {
-    fontSize: 14,
-    color: colors.headerText,
-    fontStyle: 'italic',
-    marginLeft: 40,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  subRow: {
+  nestedContainer: {
     paddingLeft: 16,
-  },
-  nestedRow: {
-    paddingLeft: 32,
   },
   iconMargin: {
     marginLeft: 16,
