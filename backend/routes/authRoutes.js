@@ -1,5 +1,5 @@
 const express = require('express');
-const { registerUser, loginUser, getUserProfile, getFavorites, getOtherPages } = require('../controllers/authController');
+const { registerUser, loginUser, getUserProfile, getFavorites, getOtherPages, validateToken } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 const router = express.Router();
 
@@ -17,5 +17,7 @@ router.get('/favorites', getFavorites);
 
 // Fetch Other Pages Function
 router.get('/otherPages', getOtherPages);
+
+router.post('/validate-token', validateToken);
 
 module.exports = router;

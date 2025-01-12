@@ -103,5 +103,25 @@ const getOtherPages = async (req, res) => {
     res.status(500).json({ message: 'Server error fetching other pages' });
   }
 };
+const validateToken = async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
 
-module.exports = { registerUser, loginUser, getUserProfile, getFavorites, getOtherPages };
+  if (!token) {
+    return res.status(401).json({ message: 'Token missing' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+
+    if (user) {
+      res.status(200).json({ message: 'Token is valid' });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    return res.status(401).json({ message: 'Invalid token' });
+  }
+};
+
+module.exports = { registerUser, loginUser, getUserProfile, getFavorites, getOtherPages, validateToken };
