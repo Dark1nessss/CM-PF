@@ -4,8 +4,8 @@ import { Entypo } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import AccountModal from '../components/AccountModal';
 import MenuModal from '../components/MenuModal';
-import Favorites from '../components/JumpIn';
-import FavoriteCard from '../components/FavoriteCard';
+import JumpIn from '../components/JumpIn';
+import Favorite from '../components/FavoriteCard';
 import OtherPages from '../components/OtherPages';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -115,12 +115,12 @@ export default function HomeScreen( visible ) {
       </View>
       ) : (
         <>
-      <Favorites 
-        items={favorites} 
-        onSelect={(item) => console.log(`Selected: ${item.name}`)} 
+      <JumpIn 
+        items={favorites.map((item) => ({ ...item, name: item.title }))} 
+        onSelect={(item) => console.log(`Selected: ${item.name}`)}
       />
       <Text style={styles.sectionTitle}>Favorites</Text>
-      <FavoriteCard items={favorites} />
+      <Favorite items={favorites} />
       <Text style={styles.sectionTitle}>Other Pages...</Text>
       <OtherPages items={otherPages} />
       </>
