@@ -68,6 +68,11 @@ export default function App() {
             name="SignIn"
             component={SignInScreen}
             options={{ headerShown: false }}
+            initialParams={{
+              onLoginSuccess: () => {
+                setIsAuthenticated(true);
+              },
+            }}
           />
         )}
       </Stack.Navigator>
