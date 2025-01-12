@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SignInScreen from '../src/screens/SignInScreen';
 import HomeScreen from '../src/screens/HomeScreen';
+import { colors } from '../src/theme/colors';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 
 const Stack = createStackNavigator();
@@ -49,7 +50,7 @@ export default function App() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" style={styles.loader}/>
       </View>
     );
   }
@@ -85,6 +86,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
+  loader: {
+    color: colors.grayMid,
+  }
 });
