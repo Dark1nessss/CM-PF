@@ -105,10 +105,9 @@ const FavoriteCard = ({ items = [] }) => {
                 color={colors.icon}
                 style={styles.iconMargin}
               />
-              {/* Only the chevron opens the subsections */}
               <Text
                 style={styles.mainTitle}
-                onPress={() => console.log(subPage.title)} // console.log when text is clicked
+                onPress={() => console.log(subPage.title)}
               >
                 {subPage.title}
               </Text>
@@ -156,7 +155,7 @@ const FavoriteCard = ({ items = [] }) => {
             <View style={styles.mainSection}>
               <TouchableOpacity
                 style={styles.row}
-                onPress={() => toggleExpanded(index)} // Only the chevron opens the main section
+                onPress={() => toggleExpanded(index)}
               >
                 <Animated.View
                   style={{
@@ -175,10 +174,9 @@ const FavoriteCard = ({ items = [] }) => {
                   color={colors.icon}
                   style={styles.iconMargin}
                 />
-                {/* Only the text triggers console.log */}
                 <Text
                   style={styles.mainTitle}
-                  onPress={() => console.log(item.title)} // console.log when main text is clicked
+                  onPress={() => console.log(item.title)}
                 >
                   {item.title}
                 </Text>

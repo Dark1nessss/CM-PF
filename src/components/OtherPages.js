@@ -105,7 +105,12 @@ const OtherPages = ({ items = [] }) => {
                 color={colors.icon}
                 style={styles.iconMargin}
               />
-              <Text style={styles.mainTitle}>{subPage.title}</Text>
+              <Text
+                style={styles.mainTitle}
+                onPress={() => console.log(subPage.title)}
+              >
+                {subPage.title}
+              </Text>
             </TouchableOpacity>
             <View style={styles.row}>
               <TouchableOpacity>
@@ -169,7 +174,12 @@ const OtherPages = ({ items = [] }) => {
                   color={colors.icon}
                   style={styles.iconMargin}
                 />
-                <Text style={styles.mainTitle}>{item.title}</Text>
+                <Text
+                  style={styles.mainTitle}
+                  onPress={() => console.log(item.title)}
+                >
+                  {item.title}
+                </Text>
               </TouchableOpacity>
               <View style={styles.row}>
                 <TouchableOpacity>
