@@ -74,7 +74,7 @@ const OtherPages = ({ items = [] }) => {
   const getRotationStyle = (anim) =>
     anim?.interpolate({
       inputRange: [0, 1],
-      outputRange: ['0deg', '180deg']
+      outputRange: ['0deg', '90deg']
     });
 
   const renderSubPages = (subPages, itemIndex) => {
@@ -94,7 +94,7 @@ const OtherPages = ({ items = [] }) => {
                 }}
               >
                 <Entypo
-                  name={expandedSubPages[key] ? 'chevron-down' : 'chevron-right'}
+                  name={'chevron-right'}
                   size={20}
                   color={colors.icon}
                 />
@@ -163,7 +163,7 @@ const OtherPages = ({ items = [] }) => {
                   }}
                 >
                   <Entypo
-                    name={expandedItems[index] ? 'chevron-down' : 'chevron-right'}
+                    name={'chevron-right'}
                     size={24}
                     color={colors.icon}
                   />
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 4,
   },
   mainTitle: {
     fontSize: 16,
