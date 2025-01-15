@@ -6,7 +6,7 @@ const { Page, Block } = require('../models/Page');
 // Fetch Favorites
 const getFavorites = async (req, res) => {
   try {
-      const favorites = await Favorite.find().populate('pages');
+      const favorites = await Favorite.find({ ownerId: req.user.id }).populate('pages');
       res.status(200).json(favorites);
   } catch (error) {
       res.status(500).json({ message: 'Error fetching favorites', error: error.message });
@@ -16,7 +16,7 @@ const getFavorites = async (req, res) => {
 // Fetch Other Pages
 const getOtherPages = async (req, res) => {
   try {
-      const otherPages = await OtherPage.find().populate('pages');
+      const otherPages = await OtherPage.find({ ownerId: req.user.id }).populate('pages');
       res.status(200).json(otherPages);
   } catch (error) {
       res.status(500).json({ message: 'Error fetching other pages', error: error.message });

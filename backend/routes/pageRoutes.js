@@ -1,6 +1,6 @@
 const express = require('express');
 const { getFavorites, getOtherPages, createPage, getPages, updatePage, deletePage, createBlock, updateBlock, deleteBlock } = require('../controllers/pageController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/Middleware');
 const router = express.Router();
 
 // Layer routes

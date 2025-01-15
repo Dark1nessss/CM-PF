@@ -48,31 +48,49 @@ export default function HomeScreen( visible ) {
   };
 
   useEffect(() => {
-    const fetchpages = async () => {
+    const fetchPages = async () => {
       try {
         const token = await AsyncStorage.getItem('authToken');
+        if (!token) {
+          console.error('Token is missing');
+          return;
+        }
+  
         const [favoritesResponse, otherPagesResponse] = await Promise.all([
-          fetch('http://localhost:5000/auth/favorites', {
-            headers: { Authorization: `Bearer ${token}` },
+          fetch('http://localhost:5000/pages/favorites', {
+            headers: { 
+              Authorization: `Bearer ${token}`, 
+              'Content-Type': 'application/json' 
+            },
           }),
-          fetch('http://localhost:5000/auth/otherPages', {
-            headers: { Authorization: `Bearer ${token}` },
+          fetch('http://localhost:5000/pages/otherPages', {
+            headers: { 
+              Authorization: `Bearer ${token}`, 
+              'Content-Type': 'application/json' 
+            },
           }),
         ]);
-        
-        const favoritesData = await favoritesResponse.json();
-        const otherPagesData = await otherPagesResponse.json();
-  
-        setFavorites(favoritesData);
-        setOtherPages(otherPagesData);
+    
+        if (favoritesResponse.ok && otherPagesResponse.ok) {
+          const favoritesData = await favoritesResponse.json();
+          const otherPagesData = await otherPagesResponse.json();
+    
+          setFavorites(favoritesData);
+          setOtherPages(otherPagesData);
+        } else {
+          console.error('Failed to fetch pages', {
+            favoritesError: await favoritesResponse.json(),
+            otherPagesError: await otherPagesResponse.json(),
+          });
+        }
       } catch (error) {
-        console.error('Failed to fetch data:', error);
+        console.error('Error fetching pages:', error);
       } finally {
         setLoading(false);
       }
     };
   
-    fetchpages();
+    fetchPages();
   }, []);
 
   return (
