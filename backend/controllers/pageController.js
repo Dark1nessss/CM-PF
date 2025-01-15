@@ -1,4 +1,3 @@
-const User = require('../models/User');
 const Favorite = require('../models/Favorite');
 const OtherPage = require('../models/OtherPage');
 const { Page, Block } = require('../models/Page');
@@ -29,15 +28,24 @@ const createPage = async (req, res) => {
   const ownerId = req.user.id;
 
   try {
-      const page = await Page.create({ title, ownerId, parentLayer, layerType });
+    if (!parentLayer) {
+      return res.status(400).json({ message: 'Parent layer is required' });
+    }
 
-      // Add the page to the corresponding layer
-      const LayerModel = layerType === 'Favorite' ? Favorite : OtherPage;
-      await LayerModel.findByIdAndUpdate(parentLayer, { $push: { pages: page._id } });
+    const LayerModel = layerType === 'Favorite' ? Favorite : OtherPage;
+    const parent = await LayerModel.findById(parentLayer);
+    if (!parent) {
+      return res.status(404).json({ message: 'Parent layer not found' });
+    }
 
-      res.status(201).json(page);
+    const page = await Page.create({ title, ownerId, parentLayer, layerType });
+
+    // Add the page to the corresponding layer
+    await LayerModel.findByIdAndUpdate(parentLayer, { $push: { pages: page._id } });
+
+    res.status(201).json(page);
   } catch (error) {
-      res.status(500).json({ message: 'Error creating page', error: error.message });
+    res.status(500).json({ message: 'Error creating page', error: error.message });
   }
 };
 

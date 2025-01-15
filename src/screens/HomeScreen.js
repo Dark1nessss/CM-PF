@@ -93,6 +93,39 @@ export default function HomeScreen( visible ) {
     fetchPages();
   }, []);
 
+  const createNewPage = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) {
+        console.error('Token is missing');
+        return;
+      }
+  
+      const response = await fetch('http://localhost:5000/pages/create', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: 'New Page',
+          parentLayer: 'OTHERPAGE_ID_PLACEHOLDER',
+          layerType: 'OtherPage',
+        }),
+      });
+  
+      if (response.ok) {
+        const newPage = await response.json();
+        setOtherPages((prev) => [...prev, newPage]);
+        console.log('Page created:', newPage);
+      } else {
+        console.error('Failed to create page:', await response.json());
+      }
+    } catch (error) {
+      console.error('Error creating page:', error);
+    }
+  };
+
   return (
     <>
     {loading ? (
@@ -132,7 +165,16 @@ export default function HomeScreen( visible ) {
       />
       <Text style={styles.sectionTitle}>Favorites</Text>
       <Favorite items={favorites} />
-      <Text style={styles.sectionTitle}>Other Pages...</Text>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Other Pages...</Text>
+        <TouchableOpacity onPress={createNewPage}>
+          <Entypo name="plus"
+          size={20} 
+          color={colors.icon}
+          style={styles.iconstyle}
+          />
+        </TouchableOpacity>
+      </View>
       <OtherPages items={otherPages} />
       <AccountModal
         visible={modalVisible}
@@ -195,6 +237,13 @@ const styles = StyleSheet.create({
     color: colors.placeholder,
     marginHorizontal: 16,
     marginVertical: 8,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  iconstyle:{
+    marginVertical: 7,
   },
   iconContainer: {
     padding: 8,
