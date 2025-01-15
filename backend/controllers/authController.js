@@ -96,11 +96,17 @@ const getFavorites = async (req, res) => {
 // Fetch Other Pages
 const getOtherPages = async (req, res) => {
   try {
-    const otherPages = await OtherPage.find();
-    res.status(200).json(otherPages);
+      const pages = await OtherPage.find().populate('blocks');
+      const response = pages.map(page => ({
+          ...page.toObject(),
+          subPages: page.subPages.map(sub => ({
+              ...sub,
+              blocks: [], // Placeholder for future expansion
+          })),
+      }));
+      res.status(200).json(response);
   } catch (error) {
-    console.error('Error fetching other pages:', error);
-    res.status(500).json({ message: 'Server error fetching other pages' });
+      res.status(500).json({ message: 'Server error' });
   }
 };
 
