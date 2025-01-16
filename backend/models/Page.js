@@ -12,8 +12,8 @@ const PageSchema = new mongoose.Schema({
     },
     parentLayer: { 
         type: mongoose.Schema.Types.ObjectId, 
-        refPath: 'layerType',
-        required: true 
+        refPath: 'OtherPage',
+        required: true
     },
     layerType: { 
         type: String, 

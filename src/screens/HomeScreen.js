@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform, StatusBar, ScrollView, ActivityIndicator } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Entypo } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import AccountModal from '../components/AccountModal';
@@ -16,17 +17,17 @@ export default function HomeScreen( visible ) {
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
   const [otherPages, setOtherPages] = useState([]);
-  
-  useEffect(() => {
-    if (visible) {
-      fetchUserProfile();
-    }
-  }, [visible]);
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfileAndPages = async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch('http://localhost:5000/auth/profile', {
+      if (!token) {
+        console.error('Token is missing');
+        return;
+      }
+
+      // Fetch user profile
+      const profileResponse = await fetch('http://localhost:5000/auth/profile', {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -34,64 +35,52 @@ export default function HomeScreen( visible ) {
         },
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data);
+      if (profileResponse.ok) {
+        const userData = await profileResponse.json();
+        setUser(userData);
       } else {
         console.error('Failed to fetch user profile');
       }
+
+      // Fetch pages
+      const [favoritesResponse, otherPagesResponse] = await Promise.all([
+        fetch('http://localhost:5000/pages/favorites', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }),
+        fetch('http://localhost:5000/pages/otherPages', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }),
+      ]);
+
+      if (favoritesResponse.ok && otherPagesResponse.ok) {
+        const favoritesData = await favoritesResponse.json();
+        const otherPagesData = await otherPagesResponse.json();
+        setFavorites(favoritesData);
+        setOtherPages(otherPagesData);
+      } else {
+        console.error('Failed to fetch pages', {
+          favoritesError: await favoritesResponse.json(),
+          otherPagesError: await otherPagesResponse.json(),
+        });
+      }
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    const fetchPages = async () => {
-      try {
-        const token = await AsyncStorage.getItem('authToken');
-        if (!token) {
-          console.error('Token is missing');
-          return;
-        }
-  
-        const [favoritesResponse, otherPagesResponse] = await Promise.all([
-          fetch('http://localhost:5000/pages/favorites', {
-            headers: { 
-              Authorization: `Bearer ${token}`, 
-              'Content-Type': 'application/json' 
-            },
-          }),
-          fetch('http://localhost:5000/pages/otherPages', {
-            headers: { 
-              Authorization: `Bearer ${token}`, 
-              'Content-Type': 'application/json' 
-            },
-          }),
-        ]);
-    
-        if (favoritesResponse.ok && otherPagesResponse.ok) {
-          const favoritesData = await favoritesResponse.json();
-          const otherPagesData = await otherPagesResponse.json();
-    
-          setFavorites(favoritesData);
-          setOtherPages(otherPagesData);
-        } else {
-          console.error('Failed to fetch pages', {
-            favoritesError: await favoritesResponse.json(),
-            otherPagesError: await otherPagesResponse.json(),
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching pages:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    fetchPages();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserProfileAndPages();
+    }, [])
+  );
 
   const createNewPage = async () => {
     try {
@@ -100,7 +89,7 @@ export default function HomeScreen( visible ) {
         console.error('Token is missing');
         return;
       }
-  
+
       const response = await fetch('http://localhost:5000/pages/create', {
         method: 'POST',
         headers: {
@@ -108,10 +97,10 @@ export default function HomeScreen( visible ) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          title: 'New Page', // Default title
+          title: 'New Page',
         }),
       });
-  
+
       if (response.ok) {
         const newPage = await response.json();
         setOtherPages((prev) => [...prev, newPage]);
