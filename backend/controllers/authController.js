@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const OtherPage = require('../models/OtherPage');
 
 // Generate a JWT token
 const generateToken = (id) => {
@@ -25,6 +26,9 @@ const registerUser = async (req, res) => {
     });
 
     if (user) {
+
+      await createDefaultOtherPage(user._id);
+
       res.status(201).json({
         id: user._id,
         username: user.username,
@@ -102,4 +106,17 @@ const validateToken = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getUserProfile, validateToken };
+const createDefaultOtherPage = async (userId) => {
+  try {
+    const defaultPage = await OtherPage.create({
+      title: 'My First Page',
+      ownerId: userId,
+      pages: [],
+    });
+    console.log('Default OtherPage created:', defaultPage);
+  } catch (error) {
+    console.error('Error creating default OtherPage:', error.message);
+  }
+};
+
+module.exports = { registerUser, loginUser, getUserProfile, validateToken, createDefaultOtherPage };

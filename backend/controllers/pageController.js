@@ -24,28 +24,18 @@ const getOtherPages = async (req, res) => {
 
 // Create a new page
 const createPage = async (req, res) => {
-  const { title, parentLayer, layerType } = req.body;
-  const ownerId = req.user.id;
+  const { title } = req.body;
 
   try {
-    if (!parentLayer) {
-      return res.status(400).json({ message: 'Parent layer is required' });
-    }
+    const otherPage = await OtherPage.create({
+      title,
+      ownerId: req.user.id,
+      pages: [],
+    });
 
-    const LayerModel = layerType === 'Favorite' ? Favorite : OtherPage;
-    const parent = await LayerModel.findById(parentLayer);
-    if (!parent) {
-      return res.status(404).json({ message: 'Parent layer not found' });
-    }
-
-    const page = await Page.create({ title, ownerId, parentLayer, layerType });
-
-    // Add the page to the corresponding layer
-    await LayerModel.findByIdAndUpdate(parentLayer, { $push: { pages: page._id } });
-
-    res.status(201).json(page);
+    res.status(201).json(otherPage);
   } catch (error) {
-    res.status(500).json({ message: 'Error creating page', error: error.message });
+    res.status(500).json({ message: 'Error creating OtherPage', error: error.message });
   }
 };
 

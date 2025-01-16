@@ -108,9 +108,7 @@ export default function HomeScreen( visible ) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          title: 'New Page',
-          parentLayer: 'OTHERPAGE_ID_PLACEHOLDER',
-          layerType: 'OtherPage',
+          title: 'New Page', // Default title
         }),
       });
   
@@ -175,7 +173,11 @@ export default function HomeScreen( visible ) {
           />
         </TouchableOpacity>
       </View>
-      <OtherPages items={otherPages} />
+      {otherPages.length === 0 ? (
+        <Text style={styles.noPagesText}>No pages available. Click "+" to create one!</Text>
+      ) : (
+        <OtherPages items={otherPages} />
+      )}
       <AccountModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -256,5 +258,10 @@ const styles = StyleSheet.create({
   },
   loader: {
     color: colors.grayMid,
-  }
+  },
+  noPagesText: {
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginVertical: 16,
+  },
 });
