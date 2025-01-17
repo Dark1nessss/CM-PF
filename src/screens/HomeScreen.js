@@ -158,7 +158,7 @@ export default function HomeScreen( visible ) {
           <Entypo name="plus"
           size={20} 
           color={colors.icon}
-          style={styles.iconstyle}
+          style={styles.iconContainer}
           />
         </TouchableOpacity>
       </View>
@@ -232,9 +232,6 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  iconstyle:{
-    marginVertical: 7,
   },
   iconContainer: {
     padding: 8,
