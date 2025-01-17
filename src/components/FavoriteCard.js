@@ -2,12 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Entypo, Feather } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
+import PagesMenu from './PagesMenu';
 
 const FavoriteCard = ({ items = [] }) => {
   const [expandedItems, setExpandedItems] = useState({});
   const [expandedSubPages, setExpandedSubPages] = useState({});
   const [fadeAnims, setFadeAnims] = useState({});
   const [rotationAnims, setRotationAnims] = useState({});
+  const [menuVisible, setMenuVisible] = useState(false);
+
+  const toggleMenu = () => {
+    setMenuVisible(!menuVisible);
+  };
 
   useEffect(() => {
     const initAnimations = {};
@@ -182,7 +188,7 @@ const FavoriteCard = ({ items = [] }) => {
                 </Text>
               </TouchableOpacity>
               <View style={styles.row}>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={toggleMenu}>
                   <Entypo
                     name="dots-three-horizontal"
                     size={20}
@@ -214,6 +220,11 @@ const FavoriteCard = ({ items = [] }) => {
           </View>
         </View>
       ))}
+      <PagesMenu 
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)} 
+        isFavorite={true} 
+      />
     </View>
   );
 };

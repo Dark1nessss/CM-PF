@@ -21,7 +21,23 @@ const OtherPageSchema = new mongoose.Schema(
             type: String, 
             required: true 
         },
-        subPages: [SubPageSchema],
+        ownerId: { 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'User', 
+            required: true 
+        },
+        pages: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Page',
+            },
+        ],
+        subPages: [{
+            title: { 
+                type: String, 
+                required: true 
+            },
+        }],
     }
 );
 

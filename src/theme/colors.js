@@ -15,6 +15,8 @@ export const colors = {
   grayDark: '#3C3C43',
   grayLight: '#8E8E93',
   grayMid: '#AEAEB2',
+  grayBlack: '#202020',
+  grayModal: '#252525',
   link: '#0A84FF',
   icon: '#9AA0A6',
   inactive: '#5F6368',

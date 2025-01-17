@@ -15,7 +15,16 @@ const FavoriteSchema = new mongoose.Schema(
             type: String, 
             required: true 
         },
-    subPages: [SubPageSchema],
+        subPages: [{
+            title: { 
+                type: String, 
+                required: true 
+            },
+        pages: [{ 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'Page' 
+        }],
+        }],
     }
 );
 

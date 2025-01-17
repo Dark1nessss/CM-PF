@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
-const Favorite = require('../models/Favorite');
 const OtherPage = require('../models/OtherPage');
 
 // Generate a JWT token
@@ -27,6 +26,9 @@ const registerUser = async (req, res) => {
     });
 
     if (user) {
+
+      await createDefaultOtherPage(user._id);
+
       res.status(201).json({
         id: user._id,
         username: user.username,
@@ -82,34 +84,6 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-// Fetch Favorites
-const getFavorites = async (req, res) => {
-  try {
-    const favorites = await Favorite.find();
-    res.status(200).json(favorites);
-  } catch (error) {
-    console.error('Error fetching favorites:', error);
-    res.status(500).json({ message: 'Server error fetching favorites' });
-  }
-};
-
-// Fetch Other Pages
-const getOtherPages = async (req, res) => {
-  try {
-      const pages = await OtherPage.find().populate('blocks');
-      const response = pages.map(page => ({
-          ...page.toObject(),
-          subPages: page.subPages.map(sub => ({
-              ...sub,
-              blocks: [], // Placeholder for future expansion
-          })),
-      }));
-      res.status(200).json(response);
-  } catch (error) {
-      res.status(500).json({ message: 'Server error' });
-  }
-};
-
 // Validation of Tokens
 const validateToken = async (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
@@ -132,4 +106,17 @@ const validateToken = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getUserProfile, getFavorites, getOtherPages, validateToken };
+const createDefaultOtherPage = async (userId) => {
+  try {
+    const defaultPage = await OtherPage.create({
+      title: 'My First Page',
+      ownerId: userId,
+      pages: [],
+    });
+    console.log('Default OtherPage created:', defaultPage);
+  } catch (error) {
+    console.error('Error creating default OtherPage:', error.message);
+  }
+};
+
+module.exports = { registerUser, loginUser, getUserProfile, validateToken, createDefaultOtherPage };

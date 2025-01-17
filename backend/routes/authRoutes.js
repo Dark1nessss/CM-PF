@@ -1,6 +1,6 @@
 const express = require('express');
-const { registerUser, loginUser, getUserProfile, getFavorites, getOtherPages, validateToken } = require('../controllers/authController');
-const { protect } = require('../middleware/authMiddleware');
+const { registerUser, loginUser, getUserProfile, validateToken } = require('../controllers/authController');
+const { protect } = require('../middleware/Middleware');
 const router = express.Router();
 
 // Fetch Register Function
@@ -12,12 +12,7 @@ router.post('/login', loginUser);
 // Fetch User Profile Function
 router.get('/profile', protect, getUserProfile);
 
-// Fetch Favorites Function
-router.get('/favorites', getFavorites);
-
-// Fetch Other Pages Function
-router.get('/otherPages', getOtherPages);
-
+// Validate Token
 router.post('/validate-token', validateToken);
 
 module.exports = router;
