@@ -223,6 +223,7 @@ const OtherPages = ({ items = [] }) => {
       <PagesMenu 
         visible={menuVisible} 
         onClose={() => setMenuVisible(false)} 
+        isFavorite={false}
       />
     </View>
   );

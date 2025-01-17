@@ -223,6 +223,7 @@ const FavoriteCard = ({ items = [] }) => {
       <PagesMenu 
         visible={menuVisible}
         onClose={() => setMenuVisible(false)} 
+        isFavorite={true} 
       />
     </View>
   );
