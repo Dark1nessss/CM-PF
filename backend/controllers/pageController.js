@@ -154,4 +154,30 @@ const moveToFavorites = async (req, res) => {
   }
 };
 
-module.exports = { getFavorites, getOtherPages, createPage, getPages, updatePage, deletePage, createBlock, updateBlock, deleteBlock, moveToFavorites };
+// Get Page ID
+const getPageFromCollections = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log('Searching for page ID:', id);
+
+    const pageFromOtherPages = await OtherPage.findById(id);
+    if (pageFromOtherPages) {
+      console.log('Found in otherpages:', pageFromOtherPages);
+      return res.status(200).json({ ...pageFromOtherPages._doc, source: 'otherpages' });
+    }
+
+    const pageFromFavorites = await Favorite.findById(id);
+    if (pageFromFavorites) {
+      console.log('Found in favorites:', pageFromFavorites);
+      return res.status(200).json({ ...pageFromFavorites._doc, source: 'favorites' });
+    }
+
+    console.log('Page not found in any collection');
+    return res.status(404).json({ message: 'Page not found in any collection' });
+  } catch (error) {
+    console.error('Error fetching page:', error);
+    res.status(500).json({ message: 'Error fetching page details', error: error.message });
+  }
+};
+
+module.exports = { getFavorites, getOtherPages, createPage, getPages, updatePage, deletePage, createBlock, updateBlock, deleteBlock, moveToFavorites, getPageFromCollections };
