@@ -126,14 +126,6 @@ const FavoriteCard = ({ items = [] }) => {
                   color={colors.icon}
                 />
               </TouchableOpacity>
-              <TouchableOpacity>
-                <Entypo
-                  name="plus"
-                  size={20}
-                  color={colors.icon}
-                  style={styles.iconMargin}
-                />
-              </TouchableOpacity>
             </View>
           </View>
 
@@ -191,14 +183,6 @@ const FavoriteCard = ({ items = [] }) => {
                 <TouchableOpacity onPress={toggleMenu}>
                   <Entypo
                     name="dots-three-horizontal"
-                    size={20}
-                    color={colors.icon}
-                    style={styles.iconMargin}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity>
-                  <Entypo
-                    name="plus"
                     size={20}
                     color={colors.icon}
                     style={styles.iconMargin}
