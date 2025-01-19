@@ -130,21 +130,19 @@ const moveToFavorites = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
 
-    // Find the page in OtherPages collection
     const otherPage = await OtherPage.findOneAndDelete({ _id: id, ownerId: userId });
 
     if (!otherPage) {
       return res.status(404).json({ message: 'Page not found in OtherPages' });
     }
 
-    // Create a new document in Favorites with all data transferred
     const favoritePage = new Favorite({
-      _id: otherPage._id,  // Keep the same ID
+      _id: otherPage._id,
       title: otherPage.title,
       ownerId: otherPage.ownerId,
       pages: otherPage.pages,
       subPages: otherPage.subPages,
-      __v: otherPage.__v,  // Maintain versioning if needed
+      __v: otherPage.__v,
     });
 
     await favoritePage.save();

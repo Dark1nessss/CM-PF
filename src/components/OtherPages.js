@@ -4,12 +4,13 @@ import { Entypo, Feather } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import PagesMenu from './PagesMenu';
 
-const OtherPages = ({ items = [] }) => {
+const OtherPages = ({ items = [], onMoveToFavorites }) => {
   const [expandedItems, setExpandedItems] = useState({});
   const [expandedSubPages, setExpandedSubPages] = useState({});
   const [fadeAnims, setFadeAnims] = useState({});
   const [rotationAnims, setRotationAnims] = useState({});
   const [menuVisible, setMenuVisible] = useState(false);
+  const [selectedPage, setSelectedPage] = useState(null);
 
   const toggleMenu = () => {
     setMenuVisible(!menuVisible);
@@ -82,6 +83,11 @@ const OtherPages = ({ items = [] }) => {
       inputRange: [0, 1],
       outputRange: ['0deg', '90deg']
     });
+
+    const openMenu = (page) => {
+      setSelectedPage(page);
+      setMenuVisible(true);
+    };
 
   const renderSubPages = (subPages, itemIndex) => {
     return subPages.map((subPage, subIndex) => {
@@ -224,6 +230,8 @@ const OtherPages = ({ items = [] }) => {
         visible={menuVisible} 
         onClose={() => setMenuVisible(false)} 
         isFavorite={false}
+        onMoveToFavorites={onMoveToFavorites}
+        selectedPage={selectedPage}
       />
     </View>
   );

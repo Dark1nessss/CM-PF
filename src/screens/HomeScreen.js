@@ -8,6 +8,7 @@ import MenuModal from '../components/MenuModal';
 import JumpIn from '../components/JumpIn';
 import Favorite from '../components/FavoriteCard';
 import OtherPages from '../components/OtherPages';
+import PagesMenu from '../components/PagesMenu';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen( visible ) {
@@ -17,6 +18,7 @@ export default function HomeScreen( visible ) {
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
   const [otherPages, setOtherPages] = useState([]);
+  const [selectedPage, setSelectedPage] = useState(null);
 
   const fetchUserProfileAndPages = async () => {
     try {
@@ -113,6 +115,40 @@ export default function HomeScreen( visible ) {
     }
   };
 
+  const moveToFavorites = async (pageId) => {
+    console.log("Received pageId:", pageId);
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) {
+        console.error('No token found, request cannot be made.');
+        return;
+      }
+  
+      console.log("Making PATCH request to move page...");
+  
+      const response = await fetch(`http://localhost:5000/pages/move-to-favorites/${pageId}`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      if (response.ok) {
+        console.log("Successfully moved to favorites.");
+        const updatedPage = await response.json();
+        
+        setOtherPages((prevPages) => prevPages.filter((page) => page._id !== pageId));
+        setFavorites((prevFavorites) => [...prevFavorites, updatedPage.page]);
+        setMenuVisible(false);
+      } else {
+        console.error("Failed to move page, server response:", await response.json());
+      }
+    } catch (error) {
+      console.error('Error moving page:', error);
+    }
+  };
+
   return (
     <>
     {loading ? (
@@ -153,7 +189,7 @@ export default function HomeScreen( visible ) {
       <Text style={styles.sectionTitle}>Favorites</Text>
       <Favorite items={favorites} />
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Other Pages...</Text>
+        <Text style={styles.sectionTitle}>Private</Text>
         <TouchableOpacity onPress={createNewPage}>
           <Entypo name="plus"
           size={20} 
@@ -174,6 +210,13 @@ export default function HomeScreen( visible ) {
       <MenuModal 
         visible={menuVisible} 
         onClose={() => setMenuVisible(false)} 
+      />
+      <PagesMenu
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        isFavorite={false}
+        onMoveToFavorites={moveToFavorites}
+        selectedPage={selectedPage}
       />
     </ScrollView>
     )}

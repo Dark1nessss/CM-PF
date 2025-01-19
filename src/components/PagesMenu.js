@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal, TouchableWithoutFeedba
 import { Feather } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 
-const PagesMenu = ({ visible, onClose, isFavorite }) => {
+const PagesMenu = ({ visible, onClose, isFavorite, onMoveToFavorites, selectedPage }) => {
   const menuItems = isFavorite
     ? [
         { title: 'Copy link', icon: 'link', isSeparated: true },
@@ -12,7 +12,15 @@ const PagesMenu = ({ visible, onClose, isFavorite }) => {
       ]
     : [
         { title: 'Copy link', icon: 'link', isSeparated: true },
-        { title: 'Add to Favorites', icon: 'star' },
+        { title: 'Add to Favorites', icon: 'star', onPress: () => { 
+          if (!selectedPage || !selectedPage._id) {
+            console.error("No page selected or invalid ID");
+            return;
+          }
+          console.log("Adding to favorites", selectedPage);
+          onMoveToFavorites(selectedPage._id); 
+          }
+        },
         { title: 'Duplicate', icon: 'copy' },
         { title: 'Move to', icon: 'chevron-right' },
         { title: 'Delete', icon: 'trash', isDestructive: true },
@@ -52,7 +60,10 @@ const PagesMenu = ({ visible, onClose, isFavorite }) => {
                         item.isDestructive && styles.destructiveItem,
                       ]}
                       onPress={() => {
-                        console.log(item.title);
+                        console.log(`Clicked: ${item.title}`);
+                        if (item.onPress) {
+                          item.onPress();
+                        }
                         onClose();
                       }}
                     >
