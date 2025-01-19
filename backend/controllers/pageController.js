@@ -124,4 +124,36 @@ const deleteBlock = async (req, res) => {
   }
 };
 
-module.exports = { getFavorites, getOtherPages, createPage, getPages, updatePage, deletePage, createBlock, updateBlock, deleteBlock };
+// Move from Otherpages to Favorites
+const moveToFavorites = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    // Find the page in OtherPages collection
+    const otherPage = await OtherPage.findOneAndDelete({ _id: id, ownerId: userId });
+
+    if (!otherPage) {
+      return res.status(404).json({ message: 'Page not found in OtherPages' });
+    }
+
+    // Create a new document in Favorites with all data transferred
+    const favoritePage = new Favorite({
+      _id: otherPage._id,  // Keep the same ID
+      title: otherPage.title,
+      ownerId: otherPage.ownerId,
+      pages: otherPage.pages,
+      subPages: otherPage.subPages,
+      __v: otherPage.__v,  // Maintain versioning if needed
+    });
+
+    await favoritePage.save();
+
+    res.status(200).json({ message: 'Page moved to favorites successfully', page: favoritePage });
+  } catch (error) {
+    console.error('Error moving page:', error.message);
+    res.status(500).json({ message: 'Error moving page to favorites', error: error.message });
+  }
+};
+
+module.exports = { getFavorites, getOtherPages, createPage, getPages, updatePage, deletePage, createBlock, updateBlock, deleteBlock, moveToFavorites };
