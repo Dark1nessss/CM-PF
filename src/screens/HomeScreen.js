@@ -14,6 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function HomeScreen( visible ) {
   const [modalVisible, setModalVisible] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [pageMenuVisible, setPageMenuVisible] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
@@ -212,8 +213,8 @@ export default function HomeScreen( visible ) {
         onClose={() => setMenuVisible(false)} 
       />
       <PagesMenu
-        visible={menuVisible}
-        onClose={() => setMenuVisible(false)}
+        visible={pageMenuVisible}
+        onClose={() => setPageMenuVisible(false)}
         isFavorite={false}
         onMoveToFavorites={moveToFavorites}
         selectedPage={selectedPage}
