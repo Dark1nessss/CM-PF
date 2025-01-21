@@ -9,11 +9,11 @@ const OtherPages = ({ items = [], onMoveToFavorites }) => {
   const [expandedSubPages, setExpandedSubPages] = useState({});
   const [fadeAnims, setFadeAnims] = useState({});
   const [rotationAnims, setRotationAnims] = useState({});
-  const [pageMenuVisible, setPageMenuVisible] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
   const [selectedPage, setSelectedPage] = useState(null);
 
   const toggleMenu = () => {
-    setPageMenuVisible(!pageMenuVisible);
+    setMenuVisible(!menuVisible);
   };
 
   useEffect(() => {
@@ -86,7 +86,7 @@ const OtherPages = ({ items = [], onMoveToFavorites }) => {
 
     const openMenu = (page) => {
       setSelectedPage(page);
-      setPageMenuVisible(true);
+      setMenuVisible(true);
     };
 
   const renderSubPages = (subPages, itemIndex) => {
@@ -211,8 +211,8 @@ const OtherPages = ({ items = [], onMoveToFavorites }) => {
         </View>
       ))}
       <PagesMenu 
-        visible={pageMenuVisible} 
-        onClose={() => setPageMenuVisible(false)} 
+        visible={menuVisible} 
+        onClose={() => setMenuVisible(false)} 
         isFavorite={false}
         onMoveToFavorites={onMoveToFavorites}
         selectedPage={selectedPage}

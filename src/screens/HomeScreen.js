@@ -8,18 +8,16 @@ import MenuModal from '../components/MenuModal';
 import JumpIn from '../components/JumpIn';
 import Favorite from '../components/FavoriteCard';
 import OtherPages from '../components/OtherPages';
-import PagesMenu from '../components/PagesMenu';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen( visible ) {
   const [modalVisible, setModalVisible] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
-  const [pageMenuVisible, setPageMenuVisible] = useState(false);
+  const [settingsMenu, setSettingsMenu] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
   const [otherPages, setOtherPages] = useState([]);
-  const [selectedPage, setSelectedPage] = useState(null);
 
   const fetchUserProfileAndPages = async () => {
     try {
@@ -178,7 +176,7 @@ export default function HomeScreen( visible ) {
             </Text>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconContainer} onPress={() => setMenuVisible(true)}>
+        <TouchableOpacity style={styles.iconContainer} onPress={() => setSettingsMenu(true)}>
           <Entypo name="dots-three-horizontal" size={24} color={colors.icon} />
         </TouchableOpacity>
       </View>
@@ -209,15 +207,8 @@ export default function HomeScreen( visible ) {
         onClose={() => setModalVisible(false)}
       />
       <MenuModal 
-        visible={menuVisible} 
-        onClose={() => setMenuVisible(false)} 
-      />
-      <PagesMenu
-        visible={pageMenuVisible}
-        onClose={() => setPageMenuVisible(false)}
-        isFavorite={false}
-        onMoveToFavorites={moveToFavorites}
-        selectedPage={selectedPage}
+        visible={settingsMenu} 
+        onClose={() => setSettingsMenu(false)} 
       />
     </ScrollView>
     )}

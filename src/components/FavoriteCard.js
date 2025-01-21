@@ -9,10 +9,10 @@ const FavoriteCard = ({ items = [] }) => {
   const [expandedSubPages, setExpandedSubPages] = useState({});
   const [fadeAnims, setFadeAnims] = useState({});
   const [rotationAnims, setRotationAnims] = useState({});
-  const [pageFavoriteMenuVisible, setPageFavoriteMenuVisible] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const toggleMenu = () => {
-    setPageFavoriteMenuVisible(!pageFavoriteMenuVisible);
+    setMenuVisible(!menuVisible);
   };
 
   useEffect(() => {
@@ -205,8 +205,8 @@ const FavoriteCard = ({ items = [] }) => {
         </View>
       ))}
       <PagesMenu 
-        visible={[pageFavoriteMenuVisible]}
-        onClose={() => setPageFavoriteMenuVisible(false)} 
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
         isFavorite={true} 
       />
     </View>
