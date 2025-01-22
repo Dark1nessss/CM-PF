@@ -132,7 +132,6 @@ export default function HomeScreen( visible ) {
       });
   
       if (response.ok) {
-        console.log('Page moved to favorites');
       } else {
         console.error('Failed to move page to favorites');
       }

@@ -17,7 +17,6 @@ const PagesMenu = ({ visible, onClose, isFavorite, onMoveToFavorites, selectedPa
             console.error("No page selected or invalid ID");
             return;
           }
-          console.log("Adding to favorites", selectedPage);
           onMoveToFavorites(selectedPage._id);
           }
         },

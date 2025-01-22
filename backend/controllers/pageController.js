@@ -76,17 +76,14 @@ const getPageFromCollections = async (req, res) => {
     if (!id) {
       return res.status(400).json({ message: 'Page ID is missing' });
     }
-    console.log('Searching for page ID:', id);
 
     const pageFromOtherPages = await OtherPage.findById(id);
     if (pageFromOtherPages) {
-      console.log('Found in otherpages:', pageFromOtherPages);
       return res.status(200).json({ ...pageFromOtherPages._doc, source: 'otherpages' });
     }
 
     const pageFromFavorites = await Favorite.findById(id);
     if (pageFromFavorites) {
-      console.log('Found in favorites:', pageFromFavorites);
       return res.status(200).json({ ...pageFromFavorites._doc, source: 'favorites' });
     }
 
