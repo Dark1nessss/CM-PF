@@ -10,9 +10,8 @@ import Favorite from '../components/FavoriteCard';
 import OtherPages from '../components/OtherPages';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function HomeScreen( visible ) {
+export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
-  const [menuVisible, setMenuVisible] = useState(false);
   const [settingsMenu, setSettingsMenu] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -132,6 +131,16 @@ export default function HomeScreen( visible ) {
       });
   
       if (response.ok) {
+        const updatedPage = await response.json();
+        setFavorites((prevFavorites) => {
+          if (!prevFavorites.find((item) => item._id === updatedPage._id)) {
+            return [...prevFavorites, updatedPage];
+          }
+          return prevFavorites;
+        });
+        setOtherPages((prevOtherPages) =>
+          prevOtherPages.filter((page) => page._id !== pageId)
+        );
       } else {
         console.error('Failed to move page to favorites');
       }
