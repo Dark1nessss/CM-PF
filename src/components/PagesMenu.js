@@ -18,7 +18,7 @@ const PagesMenu = ({ visible, onClose, isFavorite, onMoveToFavorites, selectedPa
             return;
           }
           console.log("Adding to favorites", selectedPage);
-          onMoveToFavorites(selectedPage._id); 
+          onMoveToFavorites(selectedPage._id);
           }
         },
         { title: 'Duplicate', icon: 'copy' },

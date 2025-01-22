@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Entypo, Feather } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import PagesMenu from './PagesMenu';
 
-const FavoriteCard = ({ items = [] }) => {
+const FavoriteCard = ({ items = [], onMoveToFavorites }) => {
   const [expandedItems, setExpandedItems] = useState({});
   const [expandedSubPages, setExpandedSubPages] = useState({});
   const [fadeAnims, setFadeAnims] = useState({});
@@ -12,9 +13,32 @@ const FavoriteCard = ({ items = [] }) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [selectedPage, setSelectedPage] = useState(null);
 
-  const toggleMenu = (page) => {
-    setSelectedPage(page);
-    setMenuVisible(!menuVisible);
+  const toggleMenu = async (page) => {
+    setMenuVisible((prevState) => !prevState);
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) {
+        console.error('Token is missing');
+        return;
+      }
+  
+      const response = await fetch(`http://localhost:5000/pages/page/${page._id}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      if (response.ok) {
+        const pageData = await response.json();
+        setSelectedPage(pageData);
+      } else {
+        console.error('Failed to fetch page data');
+      }
+    } catch (error) {
+      console.error('Error fetching page data:', error);
+    }
   };
 
   useEffect(() => {
@@ -182,7 +206,7 @@ const FavoriteCard = ({ items = [] }) => {
                 </Text>
               </TouchableOpacity>
               <View style={styles.row}>
-                <TouchableOpacity onPress={toggleMenu}>
+                <TouchableOpacity onPress={() => toggleMenu(item)}>
                   <Entypo
                     name="dots-three-horizontal"
                     size={20}
@@ -207,9 +231,11 @@ const FavoriteCard = ({ items = [] }) => {
         </View>
       ))}
       <PagesMenu 
-        visible={menuVisible}
-        onClose={() => setMenuVisible(false)}
-        isFavorite={true} 
+        visible={menuVisible} 
+        onClose={() => setMenuVisible(false)} 
+        isFavorite={false}
+        onMoveToFavorites={onMoveToFavorites}
+        selectedPage={selectedPage}
       />
     </View>
   );

@@ -73,6 +73,9 @@ const moveToFavorites = async (req, res) => {
 const getPageFromCollections = async (req, res) => {
   try {
     const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ message: 'Page ID is missing' });
+    }
     console.log('Searching for page ID:', id);
 
     const pageFromOtherPages = await OtherPage.findById(id);
