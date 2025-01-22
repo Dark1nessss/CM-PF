@@ -114,16 +114,14 @@ export default function HomeScreen( visible ) {
     }
   };
 
-  const moveToFavorites = async (pageId) => {
-    console.log("Received pageId:", pageId);
+  // Move page to favorites
+  const onMoveToFavorites = async (pageId) => {
     try {
       const token = await AsyncStorage.getItem('authToken');
       if (!token) {
         console.error('No token found, request cannot be made.');
         return;
       }
-  
-      console.log("Making PATCH request to move page...");
   
       const response = await fetch(`http://localhost:5000/pages/move-to-favorites/${pageId}`, {
         method: 'PATCH',
@@ -134,17 +132,12 @@ export default function HomeScreen( visible ) {
       });
   
       if (response.ok) {
-        console.log("Successfully moved to favorites.");
-        const updatedPage = await response.json();
-        
-        setOtherPages((prevPages) => prevPages.filter((page) => page._id !== pageId));
-        setFavorites((prevFavorites) => [...prevFavorites, updatedPage.page]);
-        setMenuVisible(false);
+        console.log('Page moved to favorites');
       } else {
-        console.error("Failed to move page, server response:", await response.json());
+        console.error('Failed to move page to favorites');
       }
     } catch (error) {
-      console.error('Error moving page:', error);
+      console.error('Error moving page to favorites:', error);
     }
   };
 
@@ -186,7 +179,7 @@ export default function HomeScreen( visible ) {
         onSelect={(item) => console.log(`Selected: ${item.name}`)}
       />
       <Text style={styles.sectionTitle}>Favorites</Text>
-      <Favorite items={favorites} />
+      <Favorite items={favorites} onMoveToFavorites={onMoveToFavorites}  />
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Private</Text>
         <TouchableOpacity onPress={createNewPage}>
@@ -200,7 +193,7 @@ export default function HomeScreen( visible ) {
       {otherPages.length === 0 ? (
         <Text style={styles.noPagesText}>No pages available. Click "+" to create one!</Text>
       ) : (
-        <OtherPages items={otherPages} />
+        <OtherPages items={otherPages} onMoveToFavorites={onMoveToFavorites}  />
       )}
       <AccountModal
         visible={modalVisible}
