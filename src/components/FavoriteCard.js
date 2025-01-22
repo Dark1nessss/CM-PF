@@ -10,8 +10,10 @@ const FavoriteCard = ({ items = [] }) => {
   const [fadeAnims, setFadeAnims] = useState({});
   const [rotationAnims, setRotationAnims] = useState({});
   const [menuVisible, setMenuVisible] = useState(false);
+  const [selectedPage, setSelectedPage] = useState(null);
 
-  const toggleMenu = () => {
+  const toggleMenu = (page) => {
+    setSelectedPage(page);
     setMenuVisible(!menuVisible);
   };
 

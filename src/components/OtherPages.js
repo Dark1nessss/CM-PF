@@ -12,7 +12,8 @@ const OtherPages = ({ items = [], onMoveToFavorites }) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [selectedPage, setSelectedPage] = useState(null);
 
-  const toggleMenu = () => {
+  const toggleMenu = (page) => {
+    setSelectedPage(page);
     setMenuVisible(!menuVisible);
   };
 
@@ -83,11 +84,6 @@ const OtherPages = ({ items = [], onMoveToFavorites }) => {
       inputRange: [0, 1],
       outputRange: ['0deg', '90deg']
     });
-
-    const openMenu = (page) => {
-      setSelectedPage(page);
-      setMenuVisible(true);
-    };
 
   const renderSubPages = (subPages, itemIndex) => {
     return subPages.map((subPage, subIndex) => {

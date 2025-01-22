@@ -38,8 +38,12 @@ const PagesMenu = ({ visible, onClose, isFavorite, onMoveToFavorites, selectedPa
                   <Feather name="file-text" size={20} color={colors.text} />
                 </View>
                 <View style={styles.headerTextContainer}>
-                  <Text style={styles.headerTitle}>Weekly To-do List</Text>
-                  <Text style={styles.headerSubtitle}>in Private</Text>
+                  <Text style={styles.headerTitle}>
+                    {selectedPage ? selectedPage.title : 'Error on Fetch'}
+                  </Text>
+                  <Text style={styles.headerSubtitle}>
+                    {selectedPage ? selectedPage.source : 'Error on Fetch'}
+                  </Text>
                 </View>
               </View>
 
