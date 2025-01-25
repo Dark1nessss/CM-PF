@@ -116,8 +116,8 @@ const OtherPages = ({ items = [], onMoveToFavorites }) => {
       return (
         <View key={key}>
           <View style={styles.subSectionRow}>
+            <View style={styles.row}>
             <TouchableOpacity
-              style={[styles.row, styles.subRow]}
               onPress={() => toggleSubPage(itemIndex, subIndex)}
             >
               <Animated.View
@@ -131,19 +131,22 @@ const OtherPages = ({ items = [], onMoveToFavorites }) => {
                   color={colors.icon}
                 />
               </Animated.View>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.row}
+                onPress={() => console.log(subPage.title)}
+              >
               <Feather
                 name="file-text"
                 size={20}
                 color={colors.icon}
                 style={styles.iconMargin}
               />
-              <Text
-                style={styles.mainTitle}
-                onPress={() => console.log(subPage.title)}
-              >
+              <Text style={styles.mainTitle}>
                 {subPage.title}
               </Text>
             </TouchableOpacity>
+            </View>
             <View style={styles.row}>
               <TouchableOpacity>
                 <Entypo
@@ -177,8 +180,8 @@ const OtherPages = ({ items = [], onMoveToFavorites }) => {
           {index > 0 && <View style={styles.divider} />}
           <View style={styles.itemContainer}>
             <View style={styles.mainSection}>
+            <View style={styles.row}>
               <TouchableOpacity
-                style={styles.row}
                 onPress={() => toggleExpanded(index)}
               >
                 <Animated.View
@@ -192,19 +195,22 @@ const OtherPages = ({ items = [], onMoveToFavorites }) => {
                     color={colors.icon}
                   />
                 </Animated.View>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.row}
+                onPress={() => console.log(item.title)}
+              >
                 <Feather
                   name="file-text"
                   size={20}
                   color={colors.icon}
                   style={styles.iconMargin}
                 />
-                <Text
-                  style={styles.mainTitle}
-                  onPress={() => console.log(item.title)}
-                >
+                <Text style={styles.mainTitle}>
                   {item.title}
                 </Text>
               </TouchableOpacity>
+            </View>
               <View style={styles.row}>
                 <TouchableOpacity onPress={() => toggleMenu(item)}>
                   <Entypo
