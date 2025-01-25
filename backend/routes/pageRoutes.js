@@ -1,9 +1,7 @@
 const express = require('express');
-const { getFavorites, getOtherPages, createPage, moveToFavorites, getPageFromCollections } = require('../controllers/pageController');
+const { getFavorites, getOtherPages, createPage, moveToFavorites, getPageFromCollections, updatePage, createBlock, updateBlock } = require('../controllers/pageController');
 const { protect } = require('../middleware/Middleware');
 const router = express.Router();
-
-// DONT FORGET TO RE-ADD THIS TO THE CONST {getPages, updatePage, deletePage, createBlock, updateBlock, deleteBlock,}
 
 // Layer routes
 router.get('/favorites', protect, getFavorites);
@@ -11,16 +9,9 @@ router.get('/otherPages', protect, getOtherPages);
 
 // Page routes
 router.post('/create', protect, createPage);
-
-// Temporarly Disabled
-// router.get('/:layerType/:layerId', protect, getPages);
-// router.patch('/update/:id', protect, updatePage);
-// router.delete('/delete/:id', protect, deletePage);
-
-// Block routes
-// router.post('/blocks/create', protect, createBlock);
-// router.patch('/blocks/update/:id', protect, updateBlock);
-// router.delete('/blocks/delete/:id', protect, deleteBlock);
+router.patch('/page/:id', protect, updatePage);
+router.post('/block', protect, createBlock);
+router.patch('/block/:id', protect, updateBlock);
 
 // Move routes
 router.patch('/move-to-favorites/:id', protect, moveToFavorites);

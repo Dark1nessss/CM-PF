@@ -1,64 +1,53 @@
+// Page schema for Notion-like structure
 const mongoose = require('mongoose');
 
-const PageSchema = new mongoose.Schema({
-    title: {
-        type: String, 
-        required: true 
-    },
-    ownerId: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'User', 
-        required: true 
-    },
-    parentLayer: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        refPath: 'OtherPage',
-        required: true
-    },
-    layerType: { 
-        type: String, 
-        enum: ['Favorite', 'OtherPage'], 
-        required: true 
-    },
-    blocks: [{ 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Block' 
-    }],
-    createdAt: { 
-        type: Date, 
-        default: Date.now 
-    },
-    updatedAt: { 
-        type: Date, 
-        default: Date.now 
-    },
-    lastEditedBy: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'User' 
-    },
+// Schema for blocks (content types such as text, images, videos, etc.)
+const BlockSchema = new mongoose.Schema({
+  type: { 
+    type: String, 
+    enum: ['text', 'image', 'video', 'audio'], 
+    required: true 
+  },
+  content: { 
+    type: String 
+  },
+  position: { 
+    type: Number, 
+    required: true 
+  },
+  createdAt: { 
+    type: Date, 
+    default: Date.now 
+  },
 });
 
-const BlockSchema = new mongoose.Schema({
-    pageId: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Page', required: true 
-    },
-    type: { 
-        type: String, 
-        enum: ['text', 'image', 'video'], 
-        required: true 
-    },
-    content: { 
-        type: String 
-    },
-    position: { 
-        type: Number, 
-        required: true 
-    },
-    createdAt: { 
-        type: Date, 
-        default: Date.now 
-    },
+// Page schema
+const PageSchema = new mongoose.Schema({
+  title: { 
+    type: String, 
+    required: true 
+  },
+  ownerId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User', 
+    required: true 
+  },
+  content: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Block' 
+  }],
+  lastEditedBy: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User' 
+  },
+  createdAt: { 
+    type: Date, 
+    default: Date.now 
+  },
+  updatedAt: { 
+    type: Date, 
+    default: Date.now 
+  },
 });
 
 const Page = mongoose.model('Page', PageSchema);
