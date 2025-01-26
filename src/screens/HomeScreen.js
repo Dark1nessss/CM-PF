@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform, StatusBar, ScrollView, ActivityIndicator } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Entypo } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import AccountModal from '../components/AccountModal';
@@ -17,6 +17,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
   const [otherPages, setOtherPages] = useState([]);
+  const navigation = useNavigation();
 
   const fetchUserProfileAndPages = async () => {
     try {
@@ -149,6 +150,10 @@ export default function HomeScreen() {
     }
   };
 
+  const navigateToPageScreen = (pageId) => {
+    navigation.navigate('Page', { pageId });
+  };
+
   return (
     <>
     {loading ? (
@@ -184,10 +189,10 @@ export default function HomeScreen() {
 
       <JumpIn 
         items={favorites.map((item) => ({ ...item, name: item.title }))} 
-        onSelect={(item) => console.log(`Selected: ${item.name}`)}
+        onSelect={(item) => navigateToPageScreen(item._id)}
       />
       <Text style={styles.sectionTitle}>Favorites</Text>
-      <Favorite items={favorites} onMoveToFavorites={onMoveToFavorites}  />
+      <Favorite items={favorites} onMoveToFavorites={onMoveToFavorites} onSelect={(item) => navigateToPageScreen(item._id)} />
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Private</Text>
         <TouchableOpacity onPress={createNewPage}>
@@ -201,7 +206,7 @@ export default function HomeScreen() {
       {otherPages.length === 0 ? (
         <Text style={styles.noPagesText}>No pages available. Click "+" to create one!</Text>
       ) : (
-        <OtherPages items={otherPages} onMoveToFavorites={onMoveToFavorites}  />
+        <OtherPages items={otherPages} onMoveToFavorites={onMoveToFavorites} onSelect={(item) => navigateToPageScreen(item._id)} />
       )}
       <AccountModal
         visible={modalVisible}

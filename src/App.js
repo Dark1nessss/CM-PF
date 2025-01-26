@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SignInScreen from '../src/screens/SignInScreen';
 import HomeScreen from '../src/screens/HomeScreen';
+import PageScreen from '../src/screens/PageScreen';
 import { colors } from '../src/theme/colors';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 
@@ -17,7 +18,6 @@ export default function App() {
     try {
       const token = await AsyncStorage.getItem('authToken');
       if (token) {
-        // Validar token no backend
         const response = await fetch('http://localhost:5000/auth/validate-token', {
           method: 'POST',
           headers: {
@@ -47,6 +47,10 @@ export default function App() {
     checkAuth();
   }, []);
 
+  const handleLoginSuccess = () => {
+    setIsAuthenticated(true);
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -59,21 +63,24 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator>
         {isAuthenticated ? (
-          <Stack.Screen
-            name="Home"
-            component={HomeScreen}
-            options={{ headerShown: false }}
-          />
+          <>
+            <Stack.Screen
+              name="Home"
+              component={HomeScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Page"
+              component={PageScreen}
+              options={{ title: 'Page' }}
+            />
+          </>
         ) : (
           <Stack.Screen
             name="SignIn"
             component={SignInScreen}
             options={{ headerShown: false }}
-            initialParams={{
-              onLoginSuccess: () => {
-                setIsAuthenticated(true);
-              },
-            }}
+            initialParams={{ onLoginSuccess: handleLoginSuccess }}
           />
         )}
       </Stack.Navigator>

@@ -5,7 +5,7 @@ import { Entypo, Feather } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import PagesMenu from './PagesMenu';
 
-const OtherPages = ({ items = [], onMoveToFavorites }) => {
+const OtherPages = ({ items = [], onMoveToFavorites, onSelect }) => {
   const [expandedItems, setExpandedItems] = useState({});
   const [expandedSubPages, setExpandedSubPages] = useState({});
   const [fadeAnims, setFadeAnims] = useState({});
@@ -198,7 +198,7 @@ const OtherPages = ({ items = [], onMoveToFavorites }) => {
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.row}
-                onPress={() => console.log(item.title)}
+                onPress={() => onSelect(item)}
               >
                 <Feather
                   name="file-text"

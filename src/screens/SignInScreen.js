@@ -25,11 +25,11 @@ export default function SignInScreen({ navigation, route }) {
         },
         body: JSON.stringify({ email, password }),
       });
-
+  
       if (response.ok) {
         const data = await response.json();
         await AsyncStorage.setItem('authToken', data.token);
-
+  
         route.params.onLoginSuccess();
         setModalVisible(false);
       } else {
