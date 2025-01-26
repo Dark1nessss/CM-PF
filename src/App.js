@@ -72,7 +72,7 @@ export default function App() {
             <Stack.Screen
               name="Page"
               component={PageScreen}
-              options={{ title: 'Page' }}
+              options={{ headerShown: false }}
             />
           </>
         ) : (
