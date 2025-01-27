@@ -67,8 +67,8 @@ export default function PageScreen() {
         <View style={styles.header}>
           <View style={styles.folderContainer}>
             <Ionicons name="folder-outline" size={24} color={colors.text} />
-            <Text style={styles.folderName}>Private</Text>
           </View>
+          <Text style={styles.folderName}>Private</Text>
           <TouchableOpacity onPress={closePage}>
             <Ionicons name="close" size={24} color={colors.text} />
           </TouchableOpacity>
@@ -77,15 +77,15 @@ export default function PageScreen() {
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
           <TouchableOpacity style={styles.actionButton}>
-            <Ionicons name="happy-outline" size={22} color={colors.textSecondary} />
+            <Ionicons name="happy-outline" size={20} color={colors.textSecondary} />
             <Text style={styles.actionText}>Add icon</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionButton}>
-            <Ionicons name="image-outline" size={22} color={colors.textSecondary} />
+            <Ionicons name="image-outline" size={20} color={colors.textSecondary} />
             <Text style={styles.actionText}>Add cover</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionButton}>
-            <Ionicons name="chatbubble-outline" size={22} color={colors.textSecondary} />
+            <Ionicons name="chatbubble-outline" size={20} color={colors.textSecondary} />
             <Text style={styles.actionText}>Add comment</Text>
           </TouchableOpacity>
         </View>
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: "#252525",
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     borderRadius: 6,
   },
   folderName: {
@@ -135,14 +135,16 @@ const styles = StyleSheet.create({
   },
   actionsContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 48,
+    justifyContent: "center",
     marginTop: 24,
     marginBottom: 32,
+    gap: 8,
   },
   actionButton: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    gap: 8,
+    gap: 4,
   },
   actionText: {
     fontSize: 14,
@@ -159,6 +161,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textSecondary,
     paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   loader: {
     flex: 1,
