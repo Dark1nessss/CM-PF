@@ -65,14 +65,16 @@ export default function PageScreen() {
       <View style={styles.pageContainer}>
         {/* Header */}
         <View style={styles.header}>
+        <View style={styles.folderWrapper}>
           <View style={styles.folderContainer}>
             <Ionicons name="folder-outline" size={24} color={colors.text} />
           </View>
           <Text style={styles.folderName}>Private</Text>
-          <TouchableOpacity onPress={closePage}>
-            <Ionicons name="close" size={24} color={colors.text} />
-          </TouchableOpacity>
         </View>
+        <TouchableOpacity onPress={closePage}>
+          <Ionicons name="close" size={24} color={colors.text} />
+        </TouchableOpacity>
+      </View>
 
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
@@ -120,10 +122,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
-  folderContainer: {
+  folderWrapper: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+  },
+  folderContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "#252525",
     paddingVertical: 8,
     paddingHorizontal: 10,
