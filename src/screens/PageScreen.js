@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useRef } from "react"
 import {
   View,
   Text,
@@ -21,6 +21,7 @@ export default function PageScreen() {
   const [page, setPage] = useState(null)
   const [pageTitle, setPageTitle] = useState("New page")
   const [loading, setLoading] = useState(true)
+  const debounceTimeout = useRef(null)
 
   useEffect(() => {
     const fetchPage = async () => {
@@ -52,6 +53,43 @@ export default function PageScreen() {
     fetchPage()
   }, [pageId])
 
+  // Save title after 1s period
+  const saveTitle = async (newTitle) => {
+    clearTimeout(debounceTimeout.current);
+    debounceTimeout.current = setTimeout(async () => {
+      const token = await AsyncStorage.getItem("authToken");
+      if (!token) {
+        console.error("Token is missing");
+        return;
+      }
+  
+      try {
+        const response = await fetch(`http://localhost:5000/pages/page/${pageId}`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ title: newTitle }),
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`Error: ${response.status}, Message: ${errorData.message}`);
+        }
+  
+        console.log("Page title updated successfully");
+      } catch (error) {
+        console.error("Error saving title:", error.message);
+      }
+    }, 1000);
+  };
+
+  const handleTitleChange = (newTitle) => {
+    setPageTitle(newTitle)
+    saveTitle(newTitle)
+  }
+
   const closePage = () => {
     navigation.goBack()
   }
@@ -65,16 +103,16 @@ export default function PageScreen() {
       <View style={styles.pageContainer}>
         {/* Header */}
         <View style={styles.header}>
-        <View style={styles.folderWrapper}>
-          <View style={styles.folderContainer}>
-            <Ionicons name="folder-outline" size={24} color={colors.text} />
+          <View style={styles.folderWrapper}>
+            <View style={styles.folderContainer}>
+              <Ionicons name="folder-outline" size={24} color={colors.text} />
+            </View>
+            <Text style={styles.folderName}>{folder || "Private"}</Text>
           </View>
-          <Text style={styles.folderName}>Private</Text>
+          <TouchableOpacity onPress={closePage}>
+            <Ionicons name="close" size={24} color={colors.text} />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={closePage}>
-          <Ionicons name="close" size={24} color={colors.text} />
-        </TouchableOpacity>
-      </View>
 
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
@@ -96,7 +134,7 @@ export default function PageScreen() {
         <TextInput
           style={styles.pageTitle}
           value={pageTitle}
-          onChangeText={setPageTitle}
+          onChangeText={handleTitleChange}
           placeholderTextColor={colors.textSecondary}
         />
 
