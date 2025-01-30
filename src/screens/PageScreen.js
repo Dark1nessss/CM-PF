@@ -17,9 +17,10 @@ import { colors } from "../theme/colors"
 export default function PageScreen() {
   const route = useRoute()
   const navigation = useNavigation()
-  const { pageId, folder } = route.params
+  const { pageId} = route.params
   const [page, setPage] = useState(null)
   const [pageTitle, setPageTitle] = useState("New page")
+  const [folder, setFolder] = useState("Private")
   const [loading, setLoading] = useState(true)
   const debounceTimeout = useRef(null)
 
@@ -44,6 +45,13 @@ export default function PageScreen() {
         const data = await response.json()
         setPage(data)
         setPageTitle(data.title || "New page")
+        if (data.source === 'otherpages') {
+          setFolder("Private");
+        } else if (data.source === 'favorites') {
+          setFolder("Favorites")
+        } else {
+          setFolder("Unknown");
+        }
       } else {
         console.error("Error fetching page:", response.status)
       }
@@ -107,7 +115,7 @@ export default function PageScreen() {
             <View style={styles.folderContainer}>
               <Ionicons name="folder-outline" size={24} color={colors.text} />
             </View>
-            <Text style={styles.folderName}>{folder || "Private"}</Text>
+            <Text style={styles.folderName}>{folder}</Text>
           </View>
           <TouchableOpacity onPress={closePage}>
             <Ionicons name="close" size={24} color={colors.text} />
