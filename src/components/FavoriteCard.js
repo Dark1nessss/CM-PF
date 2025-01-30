@@ -239,7 +239,7 @@ const FavoriteCard = ({ items = [], onMoveToFavorites, onSelect }) => {
       <PagesMenu 
         visible={menuVisible} 
         onClose={() => setMenuVisible(false)} 
-        isFavorite={false}
+        isFavorite={true}
         onMoveToFavorites={onMoveToFavorites}
         selectedPage={selectedPage}
       />
