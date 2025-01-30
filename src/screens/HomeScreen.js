@@ -150,6 +150,43 @@ export default function HomeScreen() {
     }
   };
 
+  // Move page to favorites
+  const onMoveToPrivate = async (pageId) => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) {
+        console.error('No token found, request cannot be made.');
+        return;
+      }
+  
+      const response = await fetch(`http://localhost:5000/pages/move-to-private/${pageId}`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      if (response.ok) {
+        const updatedPage = await response.json();
+        setOtherPages((prevOtherPages) => {
+          if (!prevOtherPages.find((item) => item._id === updatedPage._id)) {
+            return [...prevOtherPages, updatedPage];
+          }
+          return prevOtherPages;
+        });
+        setFavorites((prevFavorites) =>
+          prevFavorites.filter((page) => page._id !== pageId)
+        );
+      } else {
+        console.error('Failed to move page to OtherPages');
+      }
+    } catch (error) {
+      console.error('Error moving page to OtherPages:', error);
+    }
+  };
+
+
   const navigateToPageScreen = (pageId) => {
     navigation.navigate('Page', { pageId });
   };
@@ -192,7 +229,7 @@ export default function HomeScreen() {
         onSelect={(item) => navigateToPageScreen(item._id)}
       />
       <Text style={styles.sectionTitle}>Favorites</Text>
-      <Favorite items={favorites} onMoveToFavorites={onMoveToFavorites} onSelect={(item) => navigateToPageScreen(item._id)} />
+      <Favorite items={favorites} onMoveToPrivate={onMoveToPrivate} onSelect={(item) => navigateToPageScreen(item._id)} />
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Private</Text>
         <TouchableOpacity onPress={createNewPage}>

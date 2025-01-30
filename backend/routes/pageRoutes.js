@@ -1,5 +1,5 @@
 const express = require('express');
-const { getFavorites, getOtherPages, createPage, moveToFavorites, getPageFromCollections, updatePage, createBlock, updateBlock } = require('../controllers/pageController');
+const { getFavorites, getOtherPages, createPage, moveToFavorites, moveToPrivate, getPageFromCollections, updatePage, createBlock, updateBlock } = require('../controllers/pageController');
 const { protect } = require('../middleware/Middleware');
 const router = express.Router();
 
@@ -15,6 +15,7 @@ router.patch('/block/:id', protect, updateBlock);
 
 // Move routes
 router.patch('/move-to-favorites/:id', protect, moveToFavorites);
+router.patch('/move-to-private/:id', protect, moveToPrivate);
 router.get('/page/:id', protect, getPageFromCollections);
 
 module.exports = router;

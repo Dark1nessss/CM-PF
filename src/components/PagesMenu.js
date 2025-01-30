@@ -3,11 +3,18 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal, TouchableWithoutFeedba
 import { Feather } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 
-const PagesMenu = ({ visible, onClose, isFavorite, onMoveToFavorites, selectedPage }) => {
+const PagesMenu = ({ visible, onClose, isFavorite, onMoveToFavorites, onMoveToPrivate, selectedPage }) => {
   const menuItems = isFavorite
     ? [
         { title: 'Copy link', icon: 'link', isSeparated: true },
-        { title: 'Remove from Favorites', icon: 'star' },
+        { title: 'Remove from Favorites', icon: 'star', onPress: () =>{ 
+          if (!selectedPage || !selectedPage._id) {
+            console.error("No page selected or invalid ID");
+            return;
+          }
+          onMoveToPrivate(selectedPage._id);
+          }
+        },
         { title: 'Move to', icon: 'chevron-right' },
       ]
     : [

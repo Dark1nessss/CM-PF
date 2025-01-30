@@ -69,6 +69,36 @@ const moveToFavorites = async (req, res) => {
   }
 };
 
+// Move from Otherpages to Favorites
+const moveToPrivate = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const favorite = await Favorite.findOneAndDelete({ _id: id, ownerId: userId });
+
+    if (!favorite) {
+      return res.status(404).json({ message: 'Page not found in OtherPages' });
+    }
+
+    const otherPage = new OtherPage({
+      _id: favorite._id,
+      title: favorite.title,
+      ownerId: favorite.ownerId,
+      pages: favorite.pages,
+      subPages: favorite.subPages,
+      __v: favorite.__v,
+    });
+
+    await otherPage.save();
+
+    res.status(200).json({ message: 'Page moved to OtherPages successfully', page: otherPage });
+  } catch (error) {
+    console.error('Error moving page:', error.message);
+    res.status(500).json({ message: 'Error moving page to OtherPages', error: error.message });
+  }
+};
+
 // Get Page ID
 const getPageFromCollections = async (req, res) => {
   try {
@@ -149,4 +179,4 @@ const updateBlock = async (req, res) => {
   }
 };
 
-module.exports = { getFavorites, getOtherPages, createPage,  moveToFavorites, getPageFromCollections, updatePage, createBlock, updateBlock };
+module.exports = { getFavorites, getOtherPages, createPage,  moveToFavorites, moveToPrivate, getPageFromCollections, updatePage, createBlock, updateBlock };

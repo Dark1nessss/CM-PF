@@ -5,7 +5,7 @@ import { Entypo, Feather } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import PagesMenu from './PagesMenu';
 
-const FavoriteCard = ({ items = [], onMoveToFavorites, onSelect }) => {
+const FavoriteCard = ({ items = [], onMoveToFavorites, onMoveToPrivate, onSelect }) => {
   const [expandedItems, setExpandedItems] = useState({});
   const [expandedSubPages, setExpandedSubPages] = useState({});
   const [fadeAnims, setFadeAnims] = useState({});
@@ -241,6 +241,7 @@ const FavoriteCard = ({ items = [], onMoveToFavorites, onSelect }) => {
         onClose={() => setMenuVisible(false)} 
         isFavorite={true}
         onMoveToFavorites={onMoveToFavorites}
+        onMoveToPrivate={onMoveToPrivate}
         selectedPage={selectedPage}
       />
     </View>
