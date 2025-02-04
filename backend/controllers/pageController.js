@@ -27,15 +27,23 @@ const createPage = async (req, res) => {
   const { title } = req.body;
 
   try {
+    const defaultBlock = new Block({
+      type: "text",
+      content: "",
+      position: 0,
+    });
+
+    await defaultBlock.save();
+
     const otherPage = await OtherPage.create({
-      title,
+      title: title || "New Page",
       ownerId: req.user.id,
-      pages: [],
+      pages: [defaultBlock._id],
     });
 
     res.status(201).json(otherPage);
   } catch (error) {
-    res.status(500).json({ message: 'Error creating OtherPage', error: error.message });
+    res.status(500).json({ message: "Error creating OtherPage", error: error.message });
   }
 };
 
@@ -48,24 +56,34 @@ const moveToFavorites = async (req, res) => {
     const otherPage = await OtherPage.findOneAndDelete({ _id: id, ownerId: userId });
 
     if (!otherPage) {
-      return res.status(404).json({ message: 'Page not found in OtherPages' });
+      return res.status(404).json({ message: "Page not found in OtherPages" });
+    }
+
+    let pagesArray = otherPage.pages;
+    if (pagesArray.length === 0) {
+      const defaultBlock = new Block({
+        type: "text",
+        content: "",
+        position: 0,
+      });
+
+      await defaultBlock.save();
+      pagesArray.push(defaultBlock._id);
     }
 
     const favoritePage = new Favorite({
       _id: otherPage._id,
       title: otherPage.title,
       ownerId: otherPage.ownerId,
-      pages: otherPage.pages,
-      subPages: otherPage.subPages,
-      __v: otherPage.__v,
+      pages: pagesArray,
     });
 
     await favoritePage.save();
 
-    res.status(200).json({ message: 'Page moved to favorites successfully', page: favoritePage });
+    res.status(200).json({ message: "Page moved to favorites successfully", page: favoritePage });
   } catch (error) {
-    console.error('Error moving page:', error.message);
-    res.status(500).json({ message: 'Error moving page to favorites', error: error.message });
+    console.error("Error moving page:", error.message);
+    res.status(500).json({ message: "Error moving page to favorites", error: error.message });
   }
 };
 
@@ -75,27 +93,25 @@ const moveToPrivate = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
 
-    const favorite = await Favorite.findOneAndDelete({ _id: id, ownerId: userId });
+    const favoritePage = await Favorite.findOneAndDelete({ _id: id, ownerId: userId });
 
-    if (!favorite) {
-      return res.status(404).json({ message: 'Page not found in OtherPages' });
+    if (!favoritePage) {
+      return res.status(404).json({ message: "Page not found in Favorites" });
     }
 
     const otherPage = new OtherPage({
-      _id: favorite._id,
-      title: favorite.title,
-      ownerId: favorite.ownerId,
-      pages: favorite.pages,
-      subPages: favorite.subPages,
-      __v: favorite.__v,
+      _id: favoritePage._id,
+      title: favoritePage.title,
+      ownerId: favoritePage.ownerId,
+      pages: favoritePage.pages,
     });
 
     await otherPage.save();
 
-    res.status(200).json({ message: 'Page moved to OtherPages successfully', page: otherPage });
+    res.status(200).json({ message: "Page moved to OtherPages successfully", page: otherPage });
   } catch (error) {
-    console.error('Error moving page:', error.message);
-    res.status(500).json({ message: 'Error moving page to OtherPages', error: error.message });
+    console.error("Error moving page:", error.message);
+    res.status(500).json({ message: "Error moving page to OtherPages", error: error.message });
   }
 };
 
@@ -104,24 +120,18 @@ const getPageFromCollections = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id) {
-      return res.status(400).json({ message: 'Page ID is missing' });
+      return res.status(400).json({ message: "Page ID is missing" });
     }
 
-    const pageFromOtherPages = await OtherPage.findById(id);
-    if (pageFromOtherPages) {
-      return res.status(200).json({ ...pageFromOtherPages._doc, source: 'otherpages' });
-    }
+    let page = await OtherPage.findById(id).populate("pages");
+    if (page) return res.status(200).json({ ...page._doc, source: "otherpages" });
 
-    const pageFromFavorites = await Favorite.findById(id);
-    if (pageFromFavorites) {
-      return res.status(200).json({ ...pageFromFavorites._doc, source: 'favorites' });
-    }
+    page = await Favorite.findById(id).populate("pages");
+    if (page) return res.status(200).json({ ...page._doc, source: "favorites" });
 
-    console.log('Page not found in any collection');
-    return res.status(404).json({ message: 'Page not found in any collection' });
+    return res.status(404).json({ message: "Page not found in any collection" });
   } catch (error) {
-    console.error('Error fetching page:', error);
-    res.status(500).json({ message: 'Error fetching page details', error: error.message });
+    res.status(500).json({ message: "Error fetching page", error: error.message });
   }
 };
 
@@ -131,19 +141,26 @@ const updatePage = async (req, res) => {
   const { title, content } = req.body;
 
   try {
-    const page = await Page.findByIdAndUpdate(id, { 
-      title, 
-      content, 
-      updatedAt: Date.now()
-    }, { new: true });
+    let page = await OtherPage.findById(id).populate("pages");
+    if (!page) page = await Favorite.findById(id).populate("pages"); // Check Favorites
 
-    if (!page) {
-      return res.status(404).json({ message: 'Page not found' });
+    if (!page) return res.status(404).json({ message: "Page not found" });
+
+    if (title) page.title = title;
+
+    if (content) {
+      if (page.pages.length > 0) {
+        const blockId = page.pages[0]._id;
+        await Block.findByIdAndUpdate(blockId, { content });
+      }
     }
+
+    page.updatedAt = Date.now();
+    await page.save();
 
     res.status(200).json(page);
   } catch (error) {
-    res.status(500).json({ message: 'Error updating page', error: error.message });
+    res.status(500).json({ message: "Error updating page", error: error.message });
   }
 };
 
@@ -167,7 +184,7 @@ const updateBlock = async (req, res) => {
   const { content, position } = req.body;
   
   try {
-    const block = await Block.findByIdAndUpdate(id, { content, position }, { new: true });
+    const block = await Block.findByIdAndUpdate(id, { content }, { new: true });
     
     if (!block) {
       return res.status(404).json({ message: 'Block not found' });

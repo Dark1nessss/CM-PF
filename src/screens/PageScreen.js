@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react"
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -8,84 +8,75 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-} from "react-native"
-import { useRoute, useNavigation } from "@react-navigation/native"
-import AsyncStorage from "@react-native-async-storage/async-storage"
-import { Ionicons } from "@expo/vector-icons"
-import { colors } from "../theme/colors"
+} from "react-native";
+import { useRoute, useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../theme/colors";
 
 export default function PageScreen() {
-  const route = useRoute()
-  const navigation = useNavigation()
-  const { pageId} = route.params
-  const [page, setPage] = useState(null)
-  const [pageTitle, setPageTitle] = useState("New page")
-  const [folder, setFolder] = useState("Private")
-  const [loading, setLoading] = useState(true)
-  const debounceTimeout = useRef(null)
+  const route = useRoute();
+  const navigation = useNavigation();
+  const { pageId } = route.params;
+
+  const [page, setPage] = useState(null);
+  const [pageTitle, setPageTitle] = useState("New page");
+  const [folder, setFolder] = useState("Private");
+  const [loading, setLoading] = useState(true);
+  const [contentBlock, setContentBlock] = useState(null);
+
+  const debounceTimeout = useRef(null);
 
   useEffect(() => {
-    const fetchPage = async () => {
-      const token = await AsyncStorage.getItem("authToken")
-      if (!token) {
-        console.error("Token is missing")
-        setLoading(false)
-        return
-      }
+    fetchPage();
+  }, [pageId]);
+
+  const fetchPage = async () => {
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      if (!token) throw new Error("Token is missing");
 
       const response = await fetch(`http://localhost:5000/pages/page/${pageId}`, {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      })
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      });
 
-      if (response.ok) {
-        const data = await response.json()
-        setPage(data)
-        setPageTitle(data.title || "New page")
-        if (data.source === 'otherpages') {
-          setFolder("Private");
-        } else if (data.source === 'favorites') {
-          setFolder("Favorites")
-        } else {
-          setFolder("Unknown");
-        }
-      } else {
-        console.error("Error fetching page:", response.status)
+      if (!response.ok) throw new Error(`Error fetching page: ${response.status}`);
+
+      const data = await response.json();
+      setPage(data);
+      setPageTitle(data.title || "New page");
+
+      if (data.pages.length > 0) {
+        setContentBlock(data.pages[0]);
       }
-      setLoading(false)
+
+      setFolder(data.source === "otherpages" ? "Private" : data.source === "favorites" ? "Favorites" : "Unknown");
+    } catch (error) {
+      console.error(error.message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    fetchPage()
-  }, [pageId])
-
-  // Save title after 1s period
   const saveTitle = async (newTitle) => {
     clearTimeout(debounceTimeout.current);
     debounceTimeout.current = setTimeout(async () => {
-      const token = await AsyncStorage.getItem("authToken");
-      if (!token) {
-        console.error("Token is missing");
-        return;
-      }
-  
       try {
+        const token = await AsyncStorage.getItem("authToken");
+        if (!token) throw new Error("Token is missing");
+
         const response = await fetch(`http://localhost:5000/pages/page/${pageId}`, {
           method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
           body: JSON.stringify({ title: newTitle }),
         });
-  
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(`Error: ${response.status}, Message: ${errorData.message}`);
         }
-  
+
         console.log("Page title updated successfully");
       } catch (error) {
         console.error("Error saving title:", error.message);
@@ -93,17 +84,41 @@ export default function PageScreen() {
     }, 1000);
   };
 
+  const saveContent = async (blockId, newText) => {
+    clearTimeout(debounceTimeout.current);
+    debounceTimeout.current = setTimeout(async () => {
+      try {
+        await fetch(`http://localhost:5000/pages/block/${blockId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: newText }),
+        });
+
+        console.log("Block content updated successfully");
+      } catch (error) {
+        console.error("Error saving block content:", error.message);
+      }
+    }, 1000);
+  };
+
   const handleTitleChange = (newTitle) => {
-    setPageTitle(newTitle)
-    saveTitle(newTitle)
-  }
+    setPageTitle(newTitle);
+    saveTitle(newTitle);
+  };
+
+  const handleContentChange = (newText) => {
+    if (contentBlock) {
+      setContentBlock((prev) => ({ ...prev, content: newText }));
+      saveContent(contentBlock._id, newText);
+    }
+  };
 
   const closePage = () => {
-    navigation.goBack()
-  }
+    navigation.goBack();
+  };
 
   if (loading) {
-    return <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
+    return <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />;
   }
 
   return (
@@ -124,18 +139,9 @@ export default function PageScreen() {
 
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
-          <TouchableOpacity style={styles.actionButton}>
-            <Ionicons name="happy-outline" size={20} color={colors.textSecondary} />
-            <Text style={styles.actionText}>Add icon</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Ionicons name="image-outline" size={20} color={colors.textSecondary} />
-            <Text style={styles.actionText}>Add cover</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Ionicons name="chatbubble-outline" size={20} color={colors.textSecondary} />
-            <Text style={styles.actionText}>Add comment</Text>
-          </TouchableOpacity>
+          <ActionButton icon="happy-outline" label="Add icon" />
+          <ActionButton icon="image-outline" label="Add cover" />
+          <ActionButton icon="chatbubble-outline" label="Add comment" />
         </View>
 
         {/* Page Title */}
@@ -146,12 +152,27 @@ export default function PageScreen() {
           placeholderTextColor={colors.textSecondary}
         />
 
-        {/* Placeholder Text */}
-        <Text style={styles.placeholderText}>Tap here to continue...</Text>
+        {/* Page Content Block */}
+        {contentBlock && (
+          <TextInput
+            style={styles.pageContent}
+            value={contentBlock.content}
+            onChangeText={handleContentChange}
+            placeholder="Start typing..."
+            multiline
+          />
+        )}
       </View>
     </KeyboardAvoidingView>
-  )
+  );
 }
+
+const ActionButton = ({ icon, label }) => (
+  <TouchableOpacity style={styles.actionButton}>
+    <Ionicons name={icon} size={20} color={colors.textSecondary} />
+    <Text style={styles.actionText}>{label}</Text>
+  </TouchableOpacity>
+);
 
 const styles = StyleSheet.create({
   container: {
