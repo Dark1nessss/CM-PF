@@ -24,6 +24,7 @@ export default function PageScreen() {
   const [folder, setFolder] = useState("Private");
   const [loading, setLoading] = useState(true);
   const [contentBlock, setContentBlock] = useState(null);
+  const [inputHeight, setInputHeight] = useState(40);
 
   const debounceTimeout = useRef(null);
 
@@ -38,7 +39,10 @@ export default function PageScreen() {
 
       const response = await fetch(`http://localhost:5000/pages/page/${pageId}`, {
         method: "GET",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
       });
 
       if (!response.ok) throw new Error(`Error fetching page: ${response.status}`);
@@ -49,6 +53,8 @@ export default function PageScreen() {
 
       if (data.pages.length > 0) {
         setContentBlock(data.pages[0]);
+      } else {
+        setContentBlock({ _id: "new", content: "" });
       }
 
       setFolder(data.source === "otherpages" ? "Private" : data.source === "favorites" ? "Favorites" : "Unknown");
@@ -88,9 +94,13 @@ export default function PageScreen() {
     clearTimeout(debounceTimeout.current);
     debounceTimeout.current = setTimeout(async () => {
       try {
+        const token = await AsyncStorage.getItem("authToken");
         await fetch(`http://localhost:5000/pages/block/${blockId}`, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({ content: newText }),
         });
 
@@ -153,15 +163,18 @@ export default function PageScreen() {
         />
 
         {/* Page Content Block */}
-        {contentBlock && (
-          <TextInput
-            style={styles.pageContent}
-            value={contentBlock.content}
+            <TextInput
+            style={[styles.pageContent, { minHeight: 40, height: inputHeight }]}
+            value={contentBlock && contentBlock.content ? contentBlock.content : ""}
             onChangeText={handleContentChange}
-            placeholder="Start typing..."
+            placeholder="Click here to start typing..."
             multiline
+            editable={!!contentBlock}
+            onContentSizeChange={(event) => {
+              setInputHeight(event.nativeEvent.contentSize.height);
+            }}
+            scrollEnabled={false}
           />
-        )}
       </View>
     </KeyboardAvoidingView>
   );
@@ -229,6 +242,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 12,
     fontWeight: "400",
+  },
+  pageContent: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    paddingHorizontal: 16,
+    fontWeight: "200",
   },
   placeholderText: {
     fontSize: 16,
