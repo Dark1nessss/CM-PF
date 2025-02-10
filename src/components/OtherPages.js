@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Entypo, Feather } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import PagesMenu from './PagesMenu';
+import { getApiUrl } from '../api';
 
 const OtherPages = ({ items = [], onMoveToFavorites, onMoveToPrivate, onSelect }) => {
   const [expandedItems, setExpandedItems] = useState({});
@@ -22,7 +23,7 @@ const OtherPages = ({ items = [], onMoveToFavorites, onMoveToPrivate, onSelect }
         return;
       }
   
-      const response = await fetch(`http://localhost:5000/pages/page/${page._id}`, {
+      const response = await fetch(`${getApiUrl()}/pages/page/${page._id}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,

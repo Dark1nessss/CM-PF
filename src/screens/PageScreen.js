@@ -13,6 +13,7 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
+import { getApiUrl } from '../api';
 
 export default function PageScreen() {
   const route = useRoute();
@@ -42,7 +43,7 @@ export default function PageScreen() {
       const token = await AsyncStorage.getItem("authToken");
       if (!token) throw new Error("Token is missing");
 
-      const response = await fetch(`http://localhost:5000/pages/page/${pageId}`, {
+      const response = await fetch(`${getApiUrl()}/pages/page/${pageId}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -79,7 +80,7 @@ export default function PageScreen() {
         const token = await AsyncStorage.getItem("authToken");
         if (!token) throw new Error("Token is missing");
 
-        const response = await fetch(`http://localhost:5000/pages/page/${pageId}`, {
+        const response = await fetch(`${getApiUrl()}/pages/page/${pageId}`, {
           method: "PATCH",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -110,7 +111,7 @@ export default function PageScreen() {
         if (!currentBlock) return;
   
         if (currentBlock._id === "new") {
-          const createResponse = await fetch(`http://localhost:5000/pages/block`, {
+          const createResponse = await fetch(`${getApiUrl()}/pages/block`, {
             method: "POST",
             headers: {
               "Authorization": `Bearer ${token}`,
@@ -136,7 +137,7 @@ export default function PageScreen() {
           contentBlockRef.current = newBlock;
           console.log("Block created successfully", newBlock);
         } else {
-          const updateResponse = await fetch(`http://localhost:5000/pages/block/${currentBlock._id}`, {
+          const updateResponse = await fetch(`${getApiUrl()}/pages/block/${currentBlock._id}`, {
             method: "PATCH",
             headers: {
               "Authorization": `Bearer ${token}`,

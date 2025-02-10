@@ -9,6 +9,7 @@ import JumpIn from '../components/JumpIn';
 import Favorite from '../components/FavoriteCard';
 import OtherPages from '../components/OtherPages';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getApiUrl } from '../api';
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -28,7 +29,7 @@ export default function HomeScreen() {
       }
 
       // Fetch user profile
-      const profileResponse = await fetch('http://localhost:5000/auth/profile', {
+      const profileResponse = await fetch(`${getApiUrl()}/auth/profile`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -45,13 +46,13 @@ export default function HomeScreen() {
 
       // Fetch pages
       const [favoritesResponse, otherPagesResponse] = await Promise.all([
-        fetch('http://localhost:5000/pages/favorites', {
+        fetch(`${getApiUrl()}/pages/favorites`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }),
-        fetch('http://localhost:5000/pages/otherPages', {
+        fetch(`${getApiUrl()}/pages/otherPages`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -91,7 +92,7 @@ export default function HomeScreen() {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/pages/create', {
+      const response = await fetch(`${getApiUrl()}/pages/create`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -123,7 +124,7 @@ export default function HomeScreen() {
         return;
       }
   
-      const response = await fetch(`http://localhost:5000/pages/move-to-favorites/${pageId}`, {
+      const response = await fetch(`${getApiUrl()}/pages/move-to-favorites/${pageId}`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -159,7 +160,7 @@ export default function HomeScreen() {
         return;
       }
   
-      const response = await fetch(`http://localhost:5000/pages/move-to-private/${pageId}`, {
+      const response = await fetch(`${getApiUrl()}/pages/move-to-private/${pageId}`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${token}`,

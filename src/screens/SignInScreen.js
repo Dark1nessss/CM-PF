@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// src/screens/SignInScreen.js
+import React, { useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -11,14 +12,16 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import SignInModal from '../components/SignInModal';
 import { colors } from '../theme/colors';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getApiUrl } from '../api';
+import { AuthContext } from '../Auth';
 
-export default function SignInScreen({ navigation, route }) {
+export default function SignInScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
+  const { login } = useContext(AuthContext);
 
   const handleSignIn = async (email, password) => {
     try {
-      const response = await fetch('http://localhost:5000/auth/login', {
+      const response = await fetch(`${getApiUrl()}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,9 +31,7 @@ export default function SignInScreen({ navigation, route }) {
   
       if (response.ok) {
         const data = await response.json();
-        await AsyncStorage.setItem('authToken', data.token);
-  
-        route.params.onLoginSuccess();
+        login(data.token, data.user);
         setModalVisible(false);
       } else {
         console.log("Failed to login");
@@ -41,7 +42,7 @@ export default function SignInScreen({ navigation, route }) {
   };
 
   return (
-      <ScrollView
+    <ScrollView
       contentContainerStyle={styles.container}
       bounces={false}
     >
@@ -81,11 +82,11 @@ export default function SignInScreen({ navigation, route }) {
 
         <View style={styles.footerLinks}>
           <TouchableOpacity>
-          <Text style={styles.link}>Privacy & terms</Text>
+            <Text style={styles.link}>Privacy & terms</Text>
           </TouchableOpacity>
           <Text style={styles.footerDivider}>|</Text>
           <TouchableOpacity>
-          <Text style={styles.link}>Need help?</Text>
+            <Text style={styles.link}>Need help?</Text>
           </TouchableOpacity>
         </View>
 
@@ -102,46 +103,46 @@ export default function SignInScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-container: {
+  container: {
     flexGrow: 1,
     backgroundColor: colors.background,
     paddingHorizontal: 20,
     paddingTop: 32,
     paddingBottom: 16,
     alignItems: 'center',
-},
-logoContainer: {
+  },
+  logoContainer: {
     marginBottom: 16,
-},
-logo: {
+  },
+  logo: {
     width: 32,
     height: 32,
-},
-headerTitle: {
+  },
+  headerTitle: {
     fontSize: 22,
     fontWeight: '600',
     color: colors.headerText,
     marginBottom: 4,
-},
-headerSubtitle: {
+  },
+  headerSubtitle: {
     fontSize: 14,
     color: colors.placeholder,
     marginBottom: 24,
-},
-illustrationContainer: {
+  },
+  illustrationContainer: {
     marginBottom: 24,
     alignItems: 'center',
-},
-illustration: {
+  },
+  illustration: {
     width: 360,
     height: 360,
-},
-buttonsContainer: {
+  },
+  buttonsContainer: {
     width: '100%',
     gap: 8,
     marginBottom: 24,
-},
-button: {
+  },
+  button: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 2,
@@ -152,46 +153,43 @@ button: {
     gap: 8,
     textAlign: 'center',
     justifyContent: 'center',
-},
-buttonIcon: {
+  },
+  buttonIcon: {
     width: 24,
     height: 24,
-},
-buttonText: {
+  },
+  buttonText: {
     color: colors.text,
     fontSize: 14,
     fontWeight: '500',
-},
-footer: {
+  },
+  footer: {
     marginTop: 'auto',
     alignItems: 'center',
     paddingHorizontal: 24,
-},
-footerText: {
+  },
+  footerText: {
     fontSize: 12,
     color: colors.placeholder,
     textAlign: 'center',
     marginBottom: 12,
-    marginBottom: 12,
     lineHeight: 16,
-},
-link: {
+  },
+  link: {
     color: colors.link,
-},
-footerLinks: {
+  },
+  footerLinks: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     marginBottom: 6,
-},
-footerDivider: {
+  },
+  footerDivider: {
     color: colors.placeholder,
-    alignItems: 'center',
-    alignContent: 'center',
     fontSize: 11,
-},
-copyright: {
+  },
+  copyright: {
     fontSize: 11,
     color: colors.placeholder,
-},
+  },
 });
