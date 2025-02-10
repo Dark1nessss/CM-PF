@@ -133,16 +133,7 @@ export default function HomeScreen() {
       });
   
       if (response.ok) {
-        const updatedPage = await response.json();
-        setFavorites((prevFavorites) => {
-          if (!prevFavorites.find((item) => item._id === updatedPage._id)) {
-            return [...prevFavorites, updatedPage];
-          }
-          return prevFavorites;
-        });
-        setOtherPages((prevOtherPages) =>
-          prevOtherPages.filter((page) => page._id !== pageId)
-        );
+        await fetchUserProfileAndPages();
       } else {
         console.error('Failed to move page to favorites');
       }
@@ -169,16 +160,7 @@ export default function HomeScreen() {
       });
   
       if (response.ok) {
-        const updatedPage = await response.json();
-        setOtherPages((prevOtherPages) => {
-          if (!prevOtherPages.find((item) => item._id === updatedPage._id)) {
-            return [...prevOtherPages, updatedPage];
-          }
-          return prevOtherPages;
-        });
-        setFavorites((prevFavorites) =>
-          prevFavorites.filter((page) => page._id !== pageId)
-        );
+        await fetchUserProfileAndPages();
       } else {
         console.error('Failed to move page to OtherPages');
       }
@@ -210,7 +192,7 @@ export default function HomeScreen() {
       }
       
       const result = await response.json();
-      setOtherPages((prevPages) => prevPages.filter((page) => page._id !== pageId));
+      await fetchUserProfileAndPages();
       console.log(result.message);
     } catch (error) {
       console.error("Error deleting page:", error);
