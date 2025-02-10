@@ -23,7 +23,7 @@ const FavoriteSchema = new mongoose.Schema(
         pages: [
             {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: 'Page',
+                ref: 'Block',
             },
         ],
         subPages: [{

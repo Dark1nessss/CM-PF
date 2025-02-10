@@ -49,7 +49,6 @@ export default function PageScreen() {
           "Content-Type": "application/json",
         },
       });
-
       if (!response.ok) throw new Error(`Error fetching page: ${response.status}`);
 
       const data = await response.json();
@@ -62,7 +61,10 @@ export default function PageScreen() {
         setContentBlock({ _id: "new", content: "" });
       }
 
-      setFolder(data.source === "otherpages" ? "Private" : data.source === "favorites" ? "Favorites" : "Unknown");
+      setFolder(
+        data.source === "otherpages" ? "Private" :
+        data.source === "favorites" ? "Favorites" : "Unknown"
+      );
     } catch (error) {
       console.error(error.message);
     } finally {

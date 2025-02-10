@@ -168,12 +168,23 @@ const updatePage = async (req, res) => {
 
 // Create a new block (e.g., for text, image, etc.)
 const createBlock = async (req, res) => {
-  const { type, content, position } = req.body;
+  const { pageId, type, content, position } = req.body;
   
   try {
     const block = new Block({ type, content, position });
     await block.save();
-    
+
+    if (pageId) {
+      let page = await OtherPage.findById(pageId);
+      if (!page) {
+        page = await Favorite.findById(pageId);
+      }
+      if (page) {
+        page.pages.push(block._id);
+        await page.save();
+      }
+    }
+
     res.status(201).json(block);
   } catch (error) {
     res.status(500).json({ message: 'Error creating block', error: error.message });
