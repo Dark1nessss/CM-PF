@@ -210,6 +210,7 @@ export default function HomeScreen() {
       }
       
       const result = await response.json();
+      setOtherPages((prevPages) => prevPages.filter((page) => page._id !== pageId));
       console.log(result.message);
     } catch (error) {
       console.error("Error deleting page:", error);
