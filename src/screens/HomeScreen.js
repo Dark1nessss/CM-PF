@@ -187,6 +187,34 @@ export default function HomeScreen() {
     }
   };
 
+  const onDeletePage = async (pageId) => {
+    const token = await AsyncStorage.getItem('authToken');
+    if (!token) {
+      console.error("Token is missing");
+      return;
+    }
+    try {
+      const response = await fetch(`${getApiUrl()}/pages/delete/${pageId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error("Expected JSON but got:", text);
+        return;
+      }
+      
+      const result = await response.json();
+      console.log(result.message);
+    } catch (error) {
+      console.error("Error deleting page:", error);
+    }
+  };
 
   const navigateToPageScreen = (pageId) => {
     navigation.navigate('Page', { pageId });
@@ -244,7 +272,7 @@ export default function HomeScreen() {
       {otherPages.length === 0 ? (
         <Text style={styles.noPagesText}>No pages available. Click "+" to create one!</Text>
       ) : (
-        <OtherPages items={otherPages} onMoveToFavorites={onMoveToFavorites} onSelect={(item) => navigateToPageScreen(item._id)} />
+        <OtherPages items={otherPages} onMoveToFavorites={onMoveToFavorites} onSelect={(item) => navigateToPageScreen(item._id)} onDeletePage={onDeletePage} />
       )}
       <AccountModal
         visible={modalVisible}

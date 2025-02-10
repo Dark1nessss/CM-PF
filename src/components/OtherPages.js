@@ -6,7 +6,7 @@ import { colors } from '../theme/colors';
 import PagesMenu from './PagesMenu';
 import { getApiUrl } from '../api';
 
-const OtherPages = ({ items = [], onMoveToFavorites, onMoveToPrivate, onSelect }) => {
+const OtherPages = ({ items = [], onMoveToFavorites, onMoveToPrivate, onSelect, onDeletePage }) => {
   const [expandedItems, setExpandedItems] = useState({});
   const [expandedSubPages, setExpandedSubPages] = useState({});
   const [fadeAnims, setFadeAnims] = useState({});
@@ -248,6 +248,7 @@ const OtherPages = ({ items = [], onMoveToFavorites, onMoveToPrivate, onSelect }
         onMoveToFavorites={onMoveToFavorites}
         onMoveToPrivate={onMoveToPrivate}
         selectedPage={selectedPage}
+        onDeletePage={onDeletePage}
       />
     </View>
   );

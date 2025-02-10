@@ -1,5 +1,5 @@
 const express = require('express');
-const { getFavorites, getOtherPages, createPage, moveToFavorites, moveToPrivate, getPageFromCollections, updatePage, createBlock, updateBlock } = require('../controllers/pageController');
+const { getFavorites, getOtherPages, createPage, moveToFavorites, moveToPrivate, getPageFromCollections, updatePage, createBlock, updateBlock, deletePage } = require('../controllers/pageController');
 const { protect } = require('../middleware/Middleware');
 const router = express.Router();
 
@@ -9,6 +9,7 @@ router.get('/otherPages', protect, getOtherPages);
 
 // Page routes
 router.post('/create', protect, createPage);
+router.delete('/delete/:id', protect, deletePage);
 router.patch('/page/:id', protect, updatePage);
 router.post('/block', protect, createBlock);
 router.patch('/block/:id', protect, updateBlock);

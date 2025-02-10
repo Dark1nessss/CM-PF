@@ -209,4 +209,39 @@ const updateBlock = async (req, res) => {
   }
 };
 
-module.exports = { getFavorites, getOtherPages, createPage,  moveToFavorites, moveToPrivate, getPageFromCollections, updatePage, createBlock, updateBlock };
+// Delete a page and its associated blocks
+const deletePage = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
+  try {
+    let page = await OtherPage.findOne({ _id: id, ownerId: userId });
+    let collectionType = 'otherPages';
+
+    if (!page) {
+      page = await Favorite.findOne({ _id: id, ownerId: userId });
+      collectionType = 'favorites';
+    }
+
+    if (!page) {
+      return res.status(404).json({ message: "Page not found" });
+    }
+
+    if (page.pages && page.pages.length > 0) {
+      await Block.deleteMany({ _id: { $in: page.pages } });
+    }
+
+    if (collectionType === 'otherPages') {
+      await OtherPage.findByIdAndDelete(id);
+    } else {
+      await Favorite.findByIdAndDelete(id);
+    }
+
+    return res.status(200).json({ message: "Page and its blocks deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting page:", error.message);
+    return res.status(500).json({ message: "Error deleting page", error: error.message });
+  }
+};
+
+module.exports = { getFavorites, getOtherPages, createPage,  moveToFavorites, moveToPrivate, getPageFromCollections, updatePage, createBlock, updateBlock, deletePage };
