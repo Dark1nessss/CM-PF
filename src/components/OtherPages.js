@@ -104,11 +104,15 @@ const OtherPages = ({ items = [], onMoveToFavorites, onMoveToPrivate, onSelect }
     });
   };
 
-  const getRotationStyle = (anim) =>
-    anim?.interpolate({
-      inputRange: [0, 1],
-      outputRange: ['0deg', '90deg']
-    });
+  const getRotationStyle = (anim) => {
+    if (anim) {
+      return anim.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '90deg'],
+      });
+    }
+    return '0deg';
+  };
 
   const renderSubPages = (subPages, itemIndex) => {
     return subPages.map((subPage, subIndex) => {
