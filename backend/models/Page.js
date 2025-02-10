@@ -1,7 +1,5 @@
-// Page schema for Notion-like structure
 const mongoose = require('mongoose');
 
-// Schema for blocks (content types such as text, images, videos, etc.)
 const BlockSchema = new mongoose.Schema({
   type: { 
     type: String, 
@@ -21,7 +19,6 @@ const BlockSchema = new mongoose.Schema({
   },
 });
 
-// Page schema
 const PageSchema = new mongoose.Schema({
   title: { 
     type: String, 

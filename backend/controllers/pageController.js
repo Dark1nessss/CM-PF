@@ -41,6 +41,8 @@ const createPage = async (req, res) => {
       pages: [defaultBlock._id],
     });
 
+    await otherPage.populate("pages");
+
     res.status(201).json(otherPage);
   } catch (error) {
     res.status(500).json({ message: "Error creating OtherPage", error: error.message });
