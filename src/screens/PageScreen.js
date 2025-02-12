@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
+  Keyboard,
   Platform,
   ActivityIndicator,
 } from "react-native";
@@ -13,7 +14,8 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
-import { getApiUrl } from '../api';
+import { getApiUrl } from "../api";
+import { RichEditor, RichToolbar } from "react-native-pell-rich-editor";
 
 export default function PageScreen() {
   const route = useRoute();
@@ -26,7 +28,8 @@ export default function PageScreen() {
   const [loading, setLoading] = useState(true);
   const [contentBlock, setContentBlock] = useState(null);
   const [inputHeight, setInputHeight] = useState(40);
-
+  // The editor is always visible in this implementation.
+  const richText = useRef();
   const debounceTimeout = useRef(null);
   const contentBlockRef = useRef(null);
 
@@ -42,7 +45,6 @@ export default function PageScreen() {
     try {
       const token = await AsyncStorage.getItem("authToken");
       if (!token) throw new Error("Token is missing");
-
       const response = await fetch(`${getApiUrl()}/pages/page/${pageId}`, {
         method: "GET",
         headers: {
@@ -51,20 +53,20 @@ export default function PageScreen() {
         },
       });
       if (!response.ok) throw new Error(`Error fetching page: ${response.status}`);
-
       const data = await response.json();
       setPage(data);
       setPageTitle(data.title || "New page");
-
       if (data.pages && data.pages.length > 0) {
         setContentBlock(data.pages[0]);
       } else {
         setContentBlock({ _id: "new", content: "" });
       }
-
       setFolder(
-        data.source === "otherpages" ? "Private" :
-        data.source === "favorites" ? "Favorites" : "Unknown"
+        data.source === "otherpages"
+          ? "Private"
+          : data.source === "favorites"
+          ? "Favorites"
+          : "Unknown"
       );
     } catch (error) {
       console.error(error.message);
@@ -79,7 +81,6 @@ export default function PageScreen() {
       try {
         const token = await AsyncStorage.getItem("authToken");
         if (!token) throw new Error("Token is missing");
-
         const response = await fetch(`${getApiUrl()}/pages/page/${pageId}`, {
           method: "PATCH",
           headers: {
@@ -88,12 +89,10 @@ export default function PageScreen() {
           },
           body: JSON.stringify({ title: newTitle }),
         });
-
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(`Error: ${response.status}, Message: ${errorData.message}`);
         }
-
         console.log("Page title updated successfully");
       } catch (error) {
         console.error("Error saving title:", error.message);
@@ -101,7 +100,7 @@ export default function PageScreen() {
     }, 1000);
   };
 
-  const saveContent = (newText) => {
+  const saveContent = async (newText) => {
     clearTimeout(debounceTimeout.current);
     debounceTimeout.current = setTimeout(async () => {
       try {
@@ -109,12 +108,11 @@ export default function PageScreen() {
         if (!token) throw new Error("Token is missing");
         const currentBlock = contentBlockRef.current;
         if (!currentBlock) return;
-  
         if (currentBlock._id === "new") {
           const createResponse = await fetch(`${getApiUrl()}/pages/block`, {
             method: "POST",
             headers: {
-              "Authorization": `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
@@ -124,14 +122,10 @@ export default function PageScreen() {
               position: 0,
             }),
           });
-  
           if (!createResponse.ok) {
             const errorData = await createResponse.json();
-            throw new Error(
-              `Error creating block: ${createResponse.status}, Message: ${errorData.message}`
-            );
+            throw new Error(`Error creating block: ${createResponse.status}, Message: ${errorData.message}`);
           }
-  
           const newBlock = await createResponse.json();
           setContentBlock(newBlock);
           contentBlockRef.current = newBlock;
@@ -140,19 +134,15 @@ export default function PageScreen() {
           const updateResponse = await fetch(`${getApiUrl()}/pages/block/${currentBlock._id}`, {
             method: "PATCH",
             headers: {
-              "Authorization": `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ content: newText }),
           });
-  
           if (!updateResponse.ok) {
             const errorData = await updateResponse.json();
-            throw new Error(
-              `Error updating block: ${updateResponse.status}, Message: ${errorData.message}`
-            );
+            throw new Error(`Error updating block: ${updateResponse.status}, Message: ${errorData.message}`);
           }
-
           console.log("Block content updated successfully");
         }
       } catch (error) {
@@ -166,13 +156,18 @@ export default function PageScreen() {
     saveTitle(newTitle);
   };
 
-  const handleContentChange = (newText) => {
-    setContentBlock((prev) => ({ ...prev, content: newText }));
-    saveContent(newText);
+  const handleContentChange = (html) => {
+    setContentBlock((prev) => ({ ...prev, content: html }));
+    saveContent(html);
   };
 
   const closePage = () => {
     navigation.goBack();
+  };
+
+  // Helper to strip HTML tags for preview (if needed).
+  const stripHTML = (html) => {
+    return html ? html.replace(/<[^>]+>/g, "") : "";
   };
 
   if (loading) {
@@ -181,11 +176,19 @@ export default function PageScreen() {
     );
   }
 
+  // Define toolbar actions as a literal array of strings.
+  const toolbarActions = [
+    "bold",
+    "italic",
+    "underline",
+    "heading1",
+    "insertBulletsList",
+    "insertOrderedList",
+    "insertLink",
+  ];
+
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <View style={styles.pageContainer}>
         {/* Header */}
         <View style={styles.header}>
@@ -202,9 +205,18 @@ export default function PageScreen() {
 
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
-          <ActionButton icon="happy-outline" label="Add icon" />
-          <ActionButton icon="image-outline" label="Add cover" />
-          <ActionButton icon="chatbubble-outline" label="Add comment" />
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name="happy-outline" size={20} color={colors.textSecondary} />
+            <Text style={styles.actionText}>Add icon</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name="image-outline" size={20} color={colors.textSecondary} />
+            <Text style={styles.actionText}>Add cover</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name="chatbubble-outline" size={20} color={colors.textSecondary} />
+            <Text style={styles.actionText}>Add comment</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Page Title */}
@@ -215,30 +227,41 @@ export default function PageScreen() {
           placeholderTextColor={colors.textSecondary}
         />
 
-        {/* Page Content Block */}
-        <TextInput
-          style={[styles.pageContent, { minHeight: 40, height: inputHeight }]}
-          value={contentBlock && contentBlock.content ? contentBlock.content : ""}
-          onChangeText={handleContentChange}
-          placeholder="Click here to start typing..."
-          multiline
-          editable={!!contentBlock}
-          onContentSizeChange={(event) => {
-            setInputHeight(event.nativeEvent.contentSize.height);
-          }}
-          scrollEnabled={false}
-        />
+        {/* Rich Editor */}
+        <View style={styles.editorContainer}>
+          <RichEditor
+            ref={richText}
+            initialContentHTML={contentBlock && contentBlock.content ? contentBlock.content : ""}
+            editorStyle={{
+              backgroundColor: "transparent",
+              color: colors.textSecondary,
+              placeholderColor: colors.textSecondary,
+            }}
+            style={styles.richEditor}
+            onChange={handleContentChange}
+            useContainer={true}
+            onCursorPosition={(cursorActions) => {
+              // Optionally, adjust scroll if needed.
+              console.log("Cursor position actions:", cursorActions);
+            }}
+          />
+        </View>
+
+        {/* Sticky Toolbar */}
+        <View style={styles.stickyToolbarContainer}>
+          <RichToolbar
+            editor={richText}
+            actions={toolbarActions}
+            iconTint={colors.textSecondary}
+            selectedIconTint={colors.primary}
+            selectedButtonStyle={{ backgroundColor: "transparent" }}
+            style={styles.richToolbar}
+          />
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
 }
-
-const ActionButton = ({ icon, label }) => (
-  <TouchableOpacity style={styles.actionButton}>
-    <Ionicons name={icon} size={20} color={colors.textSecondary} />
-    <Text style={styles.actionText}>{label}</Text>
-  </TouchableOpacity>
-);
 
 const styles = StyleSheet.create({
   container: {
@@ -258,7 +281,6 @@ const styles = StyleSheet.create({
   folderWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
   },
   folderContainer: {
     flexDirection: "row",
@@ -271,23 +293,23 @@ const styles = StyleSheet.create({
   folderName: {
     fontSize: 16,
     color: colors.text,
+    marginLeft: 8,
   },
   actionsContainer: {
     flexDirection: "row",
     justifyContent: "center",
     marginTop: 24,
     marginBottom: 32,
-    gap: 8,
   },
   actionButton: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    gap: 4,
+    marginHorizontal: 8,
   },
   actionText: {
     fontSize: 14,
     color: colors.textSecondary,
+    marginLeft: 4,
   },
   pageTitle: {
     fontSize: 32,
@@ -296,11 +318,25 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontWeight: "400",
   },
-  pageContent: {
-    fontSize: 16,
-    color: colors.textSecondary,
+  editorContainer: {
+    flex: 1,
     paddingHorizontal: 16,
-    fontWeight: "200",
+  },
+  richEditor: {
+    flex: 1,
+    minHeight: 200,
+    backgroundColor: "transparent",
+  },
+  stickyToolbarContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "#252525",
+  },
+  richToolbar: {
+    borderTopWidth: 1,
+    borderColor: colors.textSecondary,
   },
   loader: {
     flex: 1,
