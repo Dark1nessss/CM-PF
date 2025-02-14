@@ -8,12 +8,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Keyboard
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
-import { getApiUrl } from '../api';
+import { getApiUrl } from "../api";
+import RichTextEditor from "../components/RichTextEditor";
 
 export default function PageScreen() {
   const route = useRoute();
@@ -25,10 +27,11 @@ export default function PageScreen() {
   const [folder, setFolder] = useState("Private");
   const [loading, setLoading] = useState(true);
   const [contentBlock, setContentBlock] = useState(null);
-  const [inputHeight, setInputHeight] = useState(40);
-
+  const [isEditing, setIsEditing] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const debounceTimeout = useRef(null);
   const contentBlockRef = useRef(null);
+  const isSavingContent = useRef(false);
 
   useEffect(() => {
     contentBlockRef.current = contentBlock;
@@ -38,11 +41,28 @@ export default function PageScreen() {
     fetchPage();
   }, [pageId]);
 
+  // Listen for keyboard events on mobile.
+  useEffect(() => {
+    if (Platform.OS !== "web") {
+      const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+        setIsEditing(true);
+      });
+      const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+        setKeyboardHeight(0);
+        setIsEditing(false);
+      });
+      return () => {
+        showSub.remove();
+        hideSub.remove();
+      };
+    }
+  }, []);
+
   const fetchPage = async () => {
     try {
       const token = await AsyncStorage.getItem("authToken");
       if (!token) throw new Error("Token is missing");
-
       const response = await fetch(`${getApiUrl()}/pages/page/${pageId}`, {
         method: "GET",
         headers: {
@@ -51,20 +71,20 @@ export default function PageScreen() {
         },
       });
       if (!response.ok) throw new Error(`Error fetching page: ${response.status}`);
-
       const data = await response.json();
       setPage(data);
       setPageTitle(data.title || "New page");
-
       if (data.pages && data.pages.length > 0) {
         setContentBlock(data.pages[0]);
       } else {
         setContentBlock({ _id: "new", content: "" });
       }
-
       setFolder(
-        data.source === "otherpages" ? "Private" :
-        data.source === "favorites" ? "Favorites" : "Unknown"
+        data.source === "otherpages"
+          ? "Private"
+          : data.source === "favorites"
+          ? "Favorites"
+          : "Unknown"
       );
     } catch (error) {
       console.error(error.message);
@@ -79,7 +99,6 @@ export default function PageScreen() {
       try {
         const token = await AsyncStorage.getItem("authToken");
         if (!token) throw new Error("Token is missing");
-
         const response = await fetch(`${getApiUrl()}/pages/page/${pageId}`, {
           method: "PATCH",
           headers: {
@@ -88,77 +107,71 @@ export default function PageScreen() {
           },
           body: JSON.stringify({ title: newTitle }),
         });
-
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(`Error: ${response.status}, Message: ${errorData.message}`);
         }
-
         console.log("Page title updated successfully");
       } catch (error) {
         console.error("Error saving title:", error.message);
       }
-    }, 1000);
+    }, 500);
   };
 
-  const saveContent = (newText) => {
-    clearTimeout(debounceTimeout.current);
-    debounceTimeout.current = setTimeout(async () => {
-      try {
-        const token = await AsyncStorage.getItem("authToken");
-        if (!token) throw new Error("Token is missing");
-        const currentBlock = contentBlockRef.current;
-        if (!currentBlock) return;
-  
-        if (currentBlock._id === "new") {
-          const createResponse = await fetch(`${getApiUrl()}/pages/block`, {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              pageId,
-              type: "text",
-              content: newText,
-              position: 0,
-            }),
-          });
-  
-          if (!createResponse.ok) {
-            const errorData = await createResponse.json();
-            throw new Error(
-              `Error creating block: ${createResponse.status}, Message: ${errorData.message}`
-            );
-          }
-  
-          const newBlock = await createResponse.json();
-          setContentBlock(newBlock);
-          contentBlockRef.current = newBlock;
-          console.log("Block created successfully", newBlock);
-        } else {
-          const updateResponse = await fetch(`${getApiUrl()}/pages/block/${currentBlock._id}`, {
-            method: "PATCH",
-            headers: {
-              "Authorization": `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ content: newText }),
-          });
-  
-          if (!updateResponse.ok) {
-            const errorData = await updateResponse.json();
-            throw new Error(
-              `Error updating block: ${updateResponse.status}, Message: ${errorData.message}`
-            );
-          }
-
-          console.log("Block content updated successfully");
+  const handleRichTextSave = async (serializedData) => {
+    if (isSavingContent.current) return;
+    isSavingContent.current = true;
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      if (!token) throw new Error("Token is missing");
+      const currentBlock = contentBlockRef.current;
+      if (!currentBlock) return;
+      if (currentBlock._id === "new") {
+        const createResponse = await fetch(`${getApiUrl()}/pages/block`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            pageId,
+            type: "text",
+            content: serializedData,
+            position: 0,
+          }),
+        });
+        if (!createResponse.ok) {
+          const errorData = await createResponse.json();
+          throw new Error(
+            `Error creating block: ${createResponse.status}, Message: ${errorData.message}`
+          );
         }
-      } catch (error) {
-        console.error("Error saving block content:", error.message);
+        const newBlock = await createResponse.json();
+        setContentBlock(newBlock);
+        contentBlockRef.current = newBlock;
+        console.log("Block created successfully", newBlock);
+      } else {
+        const updateResponse = await fetch(`${getApiUrl()}/pages/block/${currentBlock._id}`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ content: serializedData }),
+        });
+        if (!updateResponse.ok) {
+          const errorData = await updateResponse.json();
+          throw new Error(
+            `Error updating block: ${updateResponse.status}, Message: ${errorData.message}`
+          );
+        }
+        console.log("Block content updated successfully");
       }
-    }, 1000);
+    } catch (error) {
+      console.error("Error saving block content:", error.message);
+    } finally {
+      isSavingContent.current = false;
+    }
   };
 
   const handleTitleChange = (newTitle) => {
@@ -166,14 +179,18 @@ export default function PageScreen() {
     saveTitle(newTitle);
   };
 
-  const handleContentChange = (newText) => {
-    setContentBlock((prev) => ({ ...prev, content: newText }));
-    saveContent(newText);
-  };
-
   const closePage = () => {
     navigation.goBack();
   };
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(debounceTimeout.current);
+      if (contentBlockRef.current && contentBlockRef.current.content) {
+        handleRichTextSave(contentBlockRef.current.content);
+      }
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -215,19 +232,35 @@ export default function PageScreen() {
           placeholderTextColor={colors.textSecondary}
         />
 
-        {/* Page Content Block */}
-        <TextInput
-          style={[styles.pageContent, { minHeight: 40, height: inputHeight }]}
-          value={contentBlock && contentBlock.content ? contentBlock.content : ""}
-          onChangeText={handleContentChange}
-          placeholder="Click here to start typing..."
-          multiline
-          editable={!!contentBlock}
-          onContentSizeChange={(event) => {
-            setInputHeight(event.nativeEvent.contentSize.height);
-          }}
-          scrollEnabled={false}
-        />
+        {/* Editor / Preview */}
+        {Platform.OS !== "web" ? (
+          isEditing ? (
+            <RichTextEditor
+              onSave={handleRichTextSave}
+              initialContent={contentBlock.content}
+              keyboardHeight={keyboardHeight}
+              editable={true}
+            />
+          ) : (
+            <TouchableOpacity
+              style={styles.preview}
+              onPress={() => setIsEditing(true)}
+            >
+              <RichTextEditor
+                onSave={handleRichTextSave}
+                initialContent={contentBlock.content}
+                editable={false}
+              />
+            </TouchableOpacity>
+          )
+        ) : (
+          <RichTextEditor
+            onSave={handleRichTextSave}
+            initialContent={contentBlock.content}
+            keyboardHeight={keyboardHeight}
+            editable={true}
+          />
+        )}
       </View>
     </KeyboardAvoidingView>
   );
@@ -296,11 +329,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontWeight: "400",
   },
-  pageContent: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    paddingHorizontal: 16,
-    fontWeight: "200",
+  preview: {
+    flex: 1,
+    backgroundColor: "#191919",
   },
   loader: {
     flex: 1,
