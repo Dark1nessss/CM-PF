@@ -106,6 +106,8 @@ const htmlContent = `
     const editor = document.getElementById('editor');
     const toolbar = document.getElementById('toolbar');
     let debounceTimer = null;
+    // cachedContent holds the latest content.
+    let cachedContent = editor.innerHTML;
     
     // Debounce function: wait 500ms after user stops typing.
     function triggerAutosave() {
@@ -115,12 +117,13 @@ const htmlContent = `
       }, 500);
     }
     
-    // When Enter is pressed, insert a <br> tag and trigger autosave.
+    // When Enter is pressed, insert a <br> tag, update cache and save.
     editor.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
         document.execCommand('insertHTML', false, '<br>');
-        triggerAutosave();
+        updateCache();
+        sendContent();
       }
     });
     
@@ -147,10 +150,11 @@ const htmlContent = `
       } else {
         document.execCommand(command, false, null);
       }
-      // Delay updating toolbar so command takes effect.
+      // Delay updating toolbar so the command takes effect.
       setTimeout(updateToolbar, 50);
       editor.focus();
-      triggerAutosave();
+      updateCache();
+      sendContent();
     }
     
     // Update toolbar active states.
@@ -177,9 +181,30 @@ const htmlContent = `
     // Update toolbar whenever selection changes.
     document.addEventListener('selectionchange', updateToolbar);
     
-    // Send current content.
+    // Update cache with current content.
+    function updateCache() {
+      cachedContent = editor.innerHTML;
+    }
+    
+    // On input, update toolbar, update cache and trigger autosave.
+    editor.addEventListener('input', function() {
+      updateToolbar();
+      updateCache();
+      triggerAutosave();
+    });
+    
+    // When editing stops (blur or focusout), immediately save the cached content.
+    function handleBlur() {
+      clearTimeout(debounceTimer);
+      sendContent();
+    }
+    editor.addEventListener('blur', handleBlur);
+    editor.addEventListener('focusout', handleBlur);
+    window.addEventListener('beforeunload', sendContent);
+    
+    // Send cached content to React Native.
     function sendContent() {
-      const msg = JSON.stringify({ content: editor.innerHTML });
+      const msg = JSON.stringify({ content: cachedContent });
       if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
         window.ReactNativeWebView.postMessage(msg);
       } else if (window.parent) {
@@ -187,44 +212,28 @@ const htmlContent = `
       }
     }
     
-    // On input, update toolbar and trigger autosave.
-    editor.addEventListener('input', function() {
-      updateToolbar();
-      triggerAutosave();
-    });
-    
-    // Also save when editing stops.
-    editor.addEventListener('blur', function() {
-      clearTimeout(debounceTimer);
-      sendContent();
-    });
-    editor.addEventListener('focusout', function() {
-      clearTimeout(debounceTimer);
-      sendContent();
-    });
-    window.addEventListener('beforeunload', sendContent);
-    
     // Listen for messages from React Native to set content and editability.
     document.addEventListener('message', function(event) {
       const message = JSON.parse(event.data);
       if (message.command === 'setContent') {
-        // Only update if editor is not focused to preserve cursor position.
-        if (document.activeElement !== editor) {
-          editor.innerHTML = message.content;
-        }
+        // Always update the editor's content from the database.
+        editor.innerHTML = message.content;
+        updateToolbar();
+        updateCache();
       } else if (message.command === 'setEditable') {
         editor.contentEditable = message.editable;
         toolbar.style.display = message.editable ? "flex" : "none";
       }
     });
     
-    // On load, if editor is empty, initialize with a blank block.
+    // On load, if editor is empty, leave it empty (so placeholder shows).
     window.onload = function() {
       if (editor.innerHTML.trim() === '') {
-        editor.innerHTML = '<div></div>';
+        editor.innerHTML = '';
       }
-      editor.focus();
       updateToolbar();
+      updateCache();
+      editor.focus();
     };
   </script>
 </body>
@@ -235,7 +244,7 @@ const RichTextEditor = ({ onSave, initialContent = '', keyboardHeight = 0, edita
   const webviewRef = useRef(null);
   
   const onWebViewLoad = useCallback(() => {
-    // When the WebView loads, send the initial content.
+    // When the WebView loads for the first time, send the initial content.
     if (initialContent && Platform.OS !== 'web') {
       const message = JSON.stringify({ command: 'setContent', content: initialContent });
       if (webviewRef.current && webviewRef.current.postMessage) {
