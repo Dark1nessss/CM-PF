@@ -37,13 +37,12 @@ const htmlContent = `
     /* Editor area styling */
     #editor {
       padding: 10px;
-      /* We don't add extra bottom padding here because we adjust it from native */
       min-height: calc(100vh - 60px);
       outline: none;
     }
-    /* Each line becomes its own block */
-    #editor div {
-      margin: 0;
+    /* Ensure inline tags render correctly */
+    #editor b, #editor strong, #editor i, #editor em, #editor u {
+      display: inline;
     }
     /* Placeholder styling */
     #editor:empty:before {
@@ -73,6 +72,26 @@ const htmlContent = `
     #toolbar button.active {
       color: #007AFF;
     }
+    /* Visible styling for blockquotes */
+    blockquote {
+      border-left: 3px solid #666;
+      padding-left: 12px;
+      margin: 1em 0;
+      opacity: 0.9;
+      font-style: italic;
+    }
+    /* Tweak for bold, italic, underline */
+    b, strong {
+      font-weight: bold;
+      color: #fff;
+    }
+    i, em {
+      font-style: italic;
+      color: #ccc;
+    }
+    u {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -96,15 +115,16 @@ const htmlContent = `
       }, 500);
     }
     
-    // When Enter is pressed, insert a new block.
+    // When Enter is pressed, insert a <br> tag and trigger autosave.
     editor.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
-        document.execCommand('insertHTML', false, '<div><br></div>');
+        document.execCommand('insertHTML', false, '<br>');
+        triggerAutosave();
       }
     });
     
-    // Formatting function with improved quote handling.
+    // Formatting function.
     function format(command) {
       if (command === 'quote') {
         let inQuote = false;
@@ -127,7 +147,8 @@ const htmlContent = `
       } else {
         document.execCommand(command, false, null);
       }
-      updateToolbar();
+      // Delay updating toolbar so command takes effect.
+      setTimeout(updateToolbar, 50);
       editor.focus();
       triggerAutosave();
     }
@@ -153,6 +174,9 @@ const htmlContent = `
       toolbar.querySelector('#quoteBtn').classList.toggle('active', isQuote);
     }
     
+    // Update toolbar whenever selection changes.
+    document.addEventListener('selectionchange', updateToolbar);
+    
     // Send current content.
     function sendContent() {
       const msg = JSON.stringify({ content: editor.innerHTML });
@@ -163,33 +187,38 @@ const htmlContent = `
       }
     }
     
-    // Trigger autosave on input and blur.
+    // On input, update toolbar and trigger autosave.
     editor.addEventListener('input', function() {
       updateToolbar();
       triggerAutosave();
     });
+    
+    // Also save when editing stops.
     editor.addEventListener('blur', function() {
+      clearTimeout(debounceTimer);
+      sendContent();
+    });
+    editor.addEventListener('focusout', function() {
       clearTimeout(debounceTimer);
       sendContent();
     });
     window.addEventListener('beforeunload', sendContent);
     
-    // Listen for messages from React Native to set content.
+    // Listen for messages from React Native to set content and editability.
     document.addEventListener('message', function(event) {
       const message = JSON.parse(event.data);
       if (message.command === 'setContent') {
-        editor.innerHTML = message.content;
+        // Only update if editor is not focused to preserve cursor position.
+        if (document.activeElement !== editor) {
+          editor.innerHTML = message.content;
+        }
       } else if (message.command === 'setEditable') {
         editor.contentEditable = message.editable;
-        if (message.editable) {
-          toolbar.style.display = "flex";
-        } else {
-          toolbar.style.display = "none";
-        }
+        toolbar.style.display = message.editable ? "flex" : "none";
       }
     });
     
-    // On load, if empty, insert a starting block.
+    // On load, if editor is empty, initialize with a blank block.
     window.onload = function() {
       if (editor.innerHTML.trim() === '') {
         editor.innerHTML = '<div></div>';
@@ -206,6 +235,7 @@ const RichTextEditor = ({ onSave, initialContent = '', keyboardHeight = 0, edita
   const webviewRef = useRef(null);
   
   const onWebViewLoad = useCallback(() => {
+    // When the WebView loads, send the initial content.
     if (initialContent && Platform.OS !== 'web') {
       const message = JSON.stringify({ command: 'setContent', content: initialContent });
       if (webviewRef.current && webviewRef.current.postMessage) {
@@ -218,6 +248,14 @@ const RichTextEditor = ({ onSave, initialContent = '', keyboardHeight = 0, edita
       webviewRef.current.postMessage(setEditableMsg);
     }
   }, [initialContent, editable]);
+  
+  // Listen for changes in initialContent and update the WebView accordingly.
+  useEffect(() => {
+    if (webviewRef.current) {
+      const message = JSON.stringify({ command: 'setContent', content: initialContent });
+      webviewRef.current.postMessage(message);
+    }
+  }, [initialContent]);
   
   const handleMessage = (event) => {
     try {
@@ -247,9 +285,12 @@ const RichTextEditor = ({ onSave, initialContent = '', keyboardHeight = 0, edita
     }
   }, [onSave]);
   
+  // Subtract a fixed offset (265px) from the provided keyboardHeight.
+  const OFFSET = 265;
+  const adjustedMarginBottom = keyboardHeight > OFFSET ? keyboardHeight - OFFSET : 0;
+  
   return (
-    // Adjust container style to add a bottom margin equal to keyboardHeight.
-    <View style={[styles.container, { marginBottom: keyboardHeight }]}>
+    <View style={[styles.container, { marginBottom: adjustedMarginBottom }]}>
       <WebViewComponent
         ref={Platform.OS !== 'web' ? webviewRef : null}
         originWhitelist={['*']}
@@ -265,8 +306,14 @@ const RichTextEditor = ({ onSave, initialContent = '', keyboardHeight = 0, edita
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "transparent" },
-  webview: { flex: 1, backgroundColor: "transparent" },
+  container: { 
+    flex: 1, 
+    backgroundColor: "transparent" 
+  },
+  webview: { 
+    flex: 1, 
+    backgroundColor: "transparent" 
+  },
 });
 
 export default RichTextEditor;

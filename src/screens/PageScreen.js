@@ -165,7 +165,10 @@ export default function PageScreen() {
             `Error updating block: ${updateResponse.status}, Message: ${errorData.message}`
           );
         }
-        console.log("Block content updated successfully");
+        const updatedBlock = await updateResponse.json();
+        setContentBlock(updatedBlock);
+        contentBlockRef.current = updatedBlock;
+        console.log("Block content updated successfully", updatedBlock);
       }
     } catch (error) {
       console.error("Error saving block content:", error.message);
